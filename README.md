@@ -1,15 +1,10 @@
-![kratos](doc/img/kratos3.png)
+# Atreus
 
-[![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
-[![Build Status](https://travis-ci.org/bilibili/kratos.svg?branch=master)](https://travis-ci.org/bilibili/kratos)
-[![GoDoc](https://godoc.org/github.com/mapgoo-lab/atreus?status.svg)](https://godoc.org/github.com/mapgoo-lab/atreus)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mapgoo-lab/atreus)](https://goreportcard.com/report/github.com/mapgoo-lab/atreus)
+Atreus是B站开源的Kratos微服务框架修改来的，包含一些BUG修改和自有特性，为了快速修改，特别另外拉一个分支；  
 
-# Kratos
+> 名字来源于:B站取得名字叫Kratos（奎爷），本项目是Kratos生的仔，就叫他儿子的名字Atreus（阿特柔斯）
 
-Kratos是[bilibili](https://www.bilibili.com)开源的一套Go微服务框架，包含大量微服务相关框架及工具。  
-
-> 名字来源于:《战神》游戏以希腊神话为背景，讲述由凡人成为战神的奎托斯（Kratos）成为战神并展开弑神屠杀的冒险历程。
+一下内容基本都来自Kratos项目，基本无改动
 
 ## Goals
 
@@ -31,47 +26,34 @@ Kratos是[bilibili](https://www.bilibili.com)开源的一套Go微服务框架，
 
 Go version>=1.12 and GO111MODULE=on
 
-### GitLab配置ssh key
-
-1. windows打开本地git bash, linux直接用shell，使用如下命令生成ssh公钥和私钥对
-```shell
-ssh-keygen -t rsa -C 'xxx@xxx.com'
-```
-然后一路回车(-C 参数是你的邮箱地址)
-2. 打开~/.ssh/id_rsa.pub文件
-3. 打开gitlab,找到Profile Settings-->SSH Keys--->Add SSH Key,并把上一步中复制的内容粘贴到Key所对应的文本框，在Title对应的文本框中给这个sshkey设置一个名字，点击Add key按钮
-4. 配置git将请求从ssh转换为http
-```shell
-git config --global url."git@git.mapgoo.net:".insteadOf "https://git.mapgoo.net/"
-```
 
 ### Installation
 ```shell
-go get -u github.com/mapgoo-lab/atreus/tool/kratos
+go get -u github.com/mapgoo-lab/atreus/tool/atreus
 cd $GOPATH/src
-kratos new kratos-demo
+atreus new atreus-demo
 ```
 
-通过 `kratos new` 会快速生成基于kratos库的脚手架代码，如生成 [kratos-demo](https://github.com/mapgoo-lab/atreus-demo) 
+通过 `atreus new` 会快速生成基于kratos库的脚手架代码
 
 ### Build & Run
 
 ```shell
-cd kratos-demo/cmd
+cd atreus-demo/cmd
 go build
 ./cmd -conf ../configs
 ```
 
-打开浏览器访问：[http://localhost:8000/kratos-demo/start](http://localhost:8000/kratos-demo/start)，你会看到输出了`Golang 大法好 ！！！`
+打开浏览器访问：[http://localhost:8000/atreus-demo/start](http://localhost:8000/atreus-demo/start)，你会看到输出了`Golang 大法好 ！！！`
 
-[快速开始](doc/wiki-cn/quickstart.md)  [kratos工具](doc/wiki-cn/kratos-tool.md)
+[快速开始](doc/wiki-cn/quickstart.md)  [kratos工具](doc/wiki-cn/atreus-tool.md)
 
 ## Documentation
 
 [简体中文](doc/wiki-cn/summary.md)
 
 ## License
-Kratos is under the MIT license. See the [LICENSE](./LICENSE) file for details.
+Atreus is under the MIT license. See the [LICENSE](./LICENSE) file for details.
 
 -------------
 
