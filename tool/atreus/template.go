@@ -431,7 +431,7 @@ func ping(ctx *bm.Context) {
 
 // example for http request handler.
 func howToStart(c *bm.Context) {
-	k := &model.Kratos{
+	k := &model.Atreus{
 		Hello: "Golang 大法好 !!!",
 	}
 	c.JSON(k, nil)
@@ -494,7 +494,7 @@ func ping(ctx *bm.Context) {
 
 // example for http request handler.
 func howToStart(c *bm.Context) {
-	k := &model.Kratos{
+	k := &model.Atreus{
 		Hello: "Golang 大法好 !!!",
 	}
 	c.JSON(k, nil)
@@ -538,8 +538,8 @@ message HelloResp {
 `
 	_tplModel = `package model
 
-// Kratos hello kratos.
-type Kratos struct {
+// Atreus hello kratos.
+type Atreus struct {
 	Hello string
 }`
 	_tplGoMod = `module {{.ModuleName}}

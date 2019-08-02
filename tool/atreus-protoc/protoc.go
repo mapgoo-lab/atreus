@@ -88,7 +88,7 @@ func checkProtoc() error {
 func generate(ctx *cli.Context, protoc string) error {
 	pwd, _ := os.Getwd()
 	gosrc := path.Join(gopath(), "src")
-	ext, err := latestKratos()
+	ext, err := latestAtreus()
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func goget(url string) error {
 	return cmd.Run()
 }
 
-func latestKratos() (string, error) {
+func latestAtreus() (string, error) {
 	gopath := gopath()
 	ext := path.Join(gopath, "src/github.com/mapgoo-lab/atreus/third_party")
 	if _, err := os.Stat(ext); !os.IsNotExist(err) {
@@ -126,11 +126,11 @@ func latestKratos() (string, error) {
 		return "", err
 	}
 	for i := len(files) - 1; i >= 0; i-- {
-		if strings.HasPrefix(files[i].Name(), "kratos@") {
+		if strings.HasPrefix(files[i].Name(), "atreus@") {
 			return path.Join(baseMod, files[i].Name(), "third_party"), nil
 		}
 	}
-	return "", errors.New("not found kratos package")
+	return "", errors.New("not found atreus package")
 }
 
 func gopath() (gp string) {

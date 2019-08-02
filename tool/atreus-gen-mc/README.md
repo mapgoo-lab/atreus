@@ -5,7 +5,7 @@
 
 ##### 项目简介
 
-自动生成memcached缓存代码 和缓存回源工具kratos-gen-bts配合使用 体验更佳
+自动生成memcached缓存代码 和缓存回源工具atreus-gen-bts配合使用 体验更佳
 支持以下功能:
 - 常用mc命令(get/set/add/replace/delete)
 - 多种数据存储格式(json/pb/raw/gob/gzip)

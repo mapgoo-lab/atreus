@@ -9,8 +9,8 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "kratos"
-	app.Usage = "kratos工具集"
+	app.Name = "atreus"
+	app.Usage = "atreus工具集"
 	app.Version = Version
 	app.Commands = []cli.Command{
 		{
@@ -46,26 +46,26 @@ func main() {
 		{
 			Name:    "build",
 			Aliases: []string{"b"},
-			Usage:   "kratos build",
+			Usage:   "atreus build",
 			Action:  buildAction,
 		},
 		{
 			Name:    "run",
 			Aliases: []string{"r"},
-			Usage:   "kratos run",
+			Usage:   "atreus run",
 			Action:  runAction,
 		},
 		{
 			Name:            "tool",
 			Aliases:         []string{"t"},
-			Usage:           "kratos tool",
+			Usage:           "atreus tool",
 			Action:          toolAction,
 			SkipFlagParsing: true,
 		},
 		{
 			Name:    "version",
 			Aliases: []string{"v"},
-			Usage:   "kratos version",
+			Usage:   "atreus version",
 			Action: func(c *cli.Context) error {
 				fmt.Println(getVersion())
 				return nil
@@ -73,7 +73,7 @@ func main() {
 		},
 		{
 			Name:   "self-upgrade",
-			Usage:  "kratos self-upgrade",
+			Usage:  "atreus self-upgrade",
 			Action: upgradeAction,
 		},
 	}

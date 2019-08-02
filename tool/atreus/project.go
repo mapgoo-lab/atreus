@@ -119,7 +119,7 @@ func create() (err error) {
 }
 
 func genpb() error {
-	cmd := exec.Command("kratos", "tool", "protoc", p.Name+"/api/api.proto")
+	cmd := exec.Command("atreus", "tool", "protoc", p.Name+"/api/api.proto")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
