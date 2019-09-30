@@ -1,0 +1,1222 @@
+syntax = "proto3";
+
+//import "google/protobuf/any.proto";
+
+package mapgoo.paas.base;
+
+//import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+//import "google/api/annotations.proto";
+
+option go_package = "api";
+//option (gogoproto.goproto_getters_all) = false;
+
+option java_package = "com.mapgoo.mill.pb";
+option java_outer_classname = "BaseInfo";
+
+//平台类型
+enum PlatformType
+{
+	PLATFROM_DEFAULT = 0;
+
+	PLATFROM_ZNML = 1;			//智能麦联
+	PLATFROM_CDB = 2;			//车贷保
+	PLATFROM_MLB = 3;			//麦联宝
+	PLATFROM_OMS = 4;			//OMS
+}
+
+// 卡状态
+enum SimLtStatus {
+	STATUS_DEFAULT = 0;
+
+	STATUS_INVENTORY = 1;		// 库存
+	STATUS_TEST_READY = 2;		// 可测试
+	STATUS_ACTIVATION = 3;		// 可激活
+	STATUS_ACTIVATED = 4;		// 已激活
+	STATUS_DEACTIVATED = 5;		// 已停用
+	STATUS_RETIRED = 6;			// 已失效
+	STATUS_PURGED = 7;			// 已注销
+	STATUS_REPLACED = 8;		// 已更换
+}
+
+//设备运营状态
+enum DeviceOpState 
+{
+	STATE_DEFAULT = 0;
+
+	STATE_NORMAL = 1;						//正常状态
+	STATE_NO_AUTHORIZATION = 2;				//虚拟运营为进行托管授权
+	STATE_NO_OPEN_AUTH = 3;					//未开通
+	STATE_NO_OPEN = 4;						//未开通
+	STATE_EXPIRED = 5;						//已过期待续费
+	STATE_EXPIRED2 = 6;						//已过期待续费
+	STATE_STOPPED = 7;						//报停
+	STATE_NO_ACTIVE = 8;					//已续费待激活
+	STATE_NO_USE = 9;						//未使用
+	STATE_CANCEL = 10;						//销户
+}
+
+//设备生命周期（Life cycle)状态
+enum DeviceLCState
+{
+	LC_STATE_DEFAULT = 0;
+
+	LC_STATE_STOCK = 1;						//库存
+	LC_STATE_NO_USED = 2;					//未使用
+	LC_STATE_INSTALLED = 3;					//已安装
+	LC_STATE_REMOVED = 4;					//已拆机
+	LC_STATE_REPAIRE = 5;					//已报修
+}
+
+//设备CAN状态
+enum DeviceCanState
+{
+	CAN_STATE_DEFAULT = 0;
+
+	CAN_STATE_FACTORY = 1;					//出厂状态
+	CAN_STATE_ENGINEER_TEST = 2;			//工程测试
+	CAN_STATE_ACTIVE = 3;					//激活状态
+	CAN_STATE_NORMAL = 4;					//正常状态
+	CAN_STATE_WAITTING_BIND = 5;			//待绑定
+}
+
+//设备卡状态
+enum DeviceSimState
+{
+	SIM_STATE_DEFAULT = 0;
+
+	SIM_STATE_NORMAL = 1;					//正常
+	SIM_STATE_ARREARAGE = 2;				//欠费
+	SIM_STATE_OTHER = 3;					//其他
+}
+
+//设备操作类型
+enum DeviceOpType 
+{
+	DEV_OP_TYPE_DEFAULT = 0;
+
+	DEV_OP_TYPE_ADD = 1;		//添加设备    
+	DEV_OP_TYPE_DEL = 2;		//删除设备     
+	DEV_OP_TYPE_UPDATE =  3;	//更新设备
+	DEV_OP_TYPE_ACTIVE =  4;	//激活设备  
+	DEV_OP_TYPE_RENEWAL =  5;	//续费设备 
+	DEV_OP_TYPE_EXPIRED =  6;	//过期设备  
+	DEV_OP_TYPE_STOP = 7;		//报停设备
+	DEV_OP_TYPE_REMOVE = 8;		//拆机
+}
+
+//用户实名状态
+enum RealNameState {   
+	REALNAME_DEFAULT = 0;
+    // 未提交
+    REALNAME_NOT = 1;
+
+    // 未实名        
+    REALNAME_NONE = 2;          
+    REALNAME_APPRING = 3;       // 待审
+    REALNAME_PASS = 4;          // 已实名
+    REALNAME_FAIL = 5;         // 实名失败
+}
+
+//商品上架状态
+enum OnsaleState
+{
+	ONSALE_DEFAULT = 0;
+
+	ONSALE_ON = 1;
+	ONSALE_OFF = 2;
+	ONSALE_DEL = 3;
+}
+
+//订单状态
+enum OrderState 
+{
+	ORDER_STATE_DEFAULT = 0;
+
+	ORDER_STATE_COMMITTED = 1;
+	ORDER_STATE_FINISHED = 2;
+	ORDER_STATE_CANCEL = 3;
+}
+
+//订单售后状态
+enum OrderAfterSaleState
+{
+	ORDER_AFTERSALE_STATE_DEFAULT = 0;
+
+	ORDER_AFTERSALE_STATE_NON = 1;
+	ORDER_AFTERSALE_STATE_REQ_RETURN = 2;
+	ORDER_AFTERSALE_STATE_RETRUN_SUCCESS = 3;
+	ORDER_AFTERSALE_STATE_RETRUN_FAILED = 4;
+}
+
+//订单支付状态
+enum OrderPayState
+{
+	ORDER_PAY_STATE_DEFAULT = 0;
+
+	ORDER_PAY_STATE_NONONE = 1;
+	ORDER_PAY_STATE_PAID = 2;
+	ORDER_PAY_STATE_TIMEOUT = 3;
+}
+
+//订单支付方式
+enum OrderPayType
+{
+	ORDER_PAY_TYPE_DEFAULT = 0;
+
+	ORDER_PAY_TYPE_BALANCE = 1;
+	ORDER_PAY_TYPE_REDPACKAGE = 2;
+	ORDER_PAY_TYPE_WECHATPAY = 3;
+	ORDER_PAY_TYPE_ALIPAY = 4;
+	ORDER_PAY_TYPE_UNIONPAY = 5;
+	ORDER_PAY_TYPE_CREDITCARDPAY = 6;
+}
+
+message ObjectId {
+    uint32 objectid = 1;
+}
+
+//基础数据定义
+message Uint32Seq
+{
+    repeated uint32 items = 1;
+}
+
+message Sint32Seq
+{
+    repeated sint32 items = 1;
+}
+
+message StringSeq
+{
+    repeated string items = 1;
+}
+
+message Uint64Seq
+{
+    repeated uint64 items = 1;
+}
+
+message Sint64Seq
+{
+    repeated sint64 items = 1;
+}
+
+//微信公众号信息
+message WechatServiceInfo 
+{
+	uint32 serviceId = 1; 		//微信公众号ID
+	string serviceName = 2;	//微信公众号名称
+	uint32 appId = 3;
+	string appSecret = 4;
+	string url = 5;
+	string token = 6;
+	string accessToken = 7;
+	uint32 appType = 8;
+	string mgAppKey = 9;
+	string appTitle = 10;
+	string wxPayUrl = 11;
+	string mchid = 12;
+	string payKey = 13;
+	string payIp = 14;
+	string payNotifyUrl = 15;
+	uint32 tokenExpire = 16;
+}
+
+message BusinessTypeInfo
+{
+	uint32 businessId = 1;
+	string businessName = 2;
+	string businessDesc = 3;
+	uint32 createTime = 4;
+	uint32 updateTime = 5;
+}
+
+//设备ID
+message DeviceId
+{
+    uint32 object_id = 1;
+    string imei = 2;
+}
+
+//SIM卡ID
+message SimcardId
+{
+    uint32 sim_id = 1;
+    string iccid = 2;
+    string sim = 3;
+    string imsi = 4;
+}
+
+//设备类型
+message DeviceTypeInfo 
+{
+	uint32 MDTTypeID = 1;				//设备类型ID
+	uint32 IsWireless = 2;				//是否为无线设备
+	string Brand = 3;					//设备品牌
+	string Protocol = 4;				//设备协议
+	string Factory = 5;					//设备厂家
+	uint32 IsSmart = 6;					//是否为智能设备
+	string remark = 7;					//备注
+}
+
+//设备参数
+message DeviceParam
+{
+	string paramKey = 1;				//设备参数名
+	string paramValue = 2;				//设备参数值
+}
+
+//设备的状态信息
+message DeviceStateInfo
+{
+	uint32 objectID = 1;				//设备ID
+	DeviceOpState opState = 2;			//设备运营状态
+	DeviceLCState lcState = 3;			//设备生命周期状态
+	DeviceCanState canState = 4;		//设备CAN状态
+	DeviceSimState simState = 5;		//设备SIM卡装改
+}
+
+//设备的基本信息
+message DeviceBaseInfo
+{
+    //设备信息版本号
+	uint64 version 			    = 1;	
+    //设备注册到系统的IMEI		
+	string imei 				= 2; 
+    //设备的目标ID                   
+	uint32 objectID 			= 3;
+    //设备名称	                
+	string objectName 			= 4;
+    //设备直属渠道号                
+	uint32 holdId 				= 5;
+    //设备类型ID                 
+	uint32 mdtTypeId 			= 6;  
+    //设备查卡的ICCID                  
+	string iccid 				= 7;
+    //是否接ACC线	            
+	bool isAcc 				    = 8;
+    //是否为OBD设备					
+	uint32 isOBD 				= 9;
+    //设备是否自带里程					
+	bool hasMileage 			= 10;
+    //设备创建时间					
+	uint32 createTime 			= 11;   
+    //设备更新时间                
+	uint32 updateTime 			= 12; 
+    //设备激活时间                  
+	uint32 activeTime			= 13;  
+    //设备过期时间                 
+	uint32 expireTime			= 14;  
+    //绑定车辆ID                 
+	uint32 vehicleId			= 15; 
+    //设备机身IMEI                  
+    string originalImei         = 16;  
+    //设备appkey                
+    string appKey               = 17;   
+    //设备类型
+    DeviceTypeInfo device_type = 18;
+}
+
+message DeviceExtInfo
+{
+	uint32 objectID 			= 1;                    //设备逻辑ID
+	string originalImei 		= 2;                    //设备机身IMEI
+	string sim 				    = 3;                    //设备卡SIM号
+	repeated string sim_history = 4;                    
+	string appKey 				= 5;
+	uint32 objectType 			= 6;
+	string objectCode 			= 7;
+	uint32 mdtId 				= 8;
+	uint32 createUserId 		= 9;
+	string remark 				= 10;
+	uint32 renewalTimes 		= 11;
+	uint32 openTime			    = 12;	
+	uint32 enterNetTime		    = 13;
+	uint32 stopTime 			= 14;
+	uint32 confirmOnline 		= 15;
+	uint32 methodToVideo 		= 16;
+	uint32 riskLevel  			= 17;
+	uint64 label				= 18;
+	uint32 sPeriod				= 19;
+	uint32 vPeriod				= 20;
+}
+
+//设备的采购信息
+message DevicePurchaseInfo 
+{
+	uint32 objectID        = 1;
+	string productBatch    = 2;		//生产批次
+	string pruchaseOrderSN = 3; 	//采购订单号(对应std_ObjectInfo的PO)
+	string supplierCode    = 4;		//供应商代码(对应std_ObjectInfo的FactoryCode)
+}
+
+//设备设定信息
+message DeviceSettingInfo
+{
+	uint32 objectID        = 1;	           //设备逻辑ID
+	bool isDeviceLogin     = 2;            //是否允许设备号登录
+	string queryPwd        = 3;            //设备号登录密码
+	uint32 overSpeed       = 4;	           //超速设置
+	uint32 deLon           = 6;            //原地设防经度
+	uint32 deLat           = 7;            //原地设防纬度
+	uint32 defenseRadius   = 8;            //原地设防半径（单位：米）
+	uint32 defenseTime     = 9;            //原地设防时间
+	bool isPanic           = 10;           //
+	bool ifFilterBSInfo    = 11;           //是否过滤基站
+	bool trackHideFlag     = 12;           //是否隐身
+	bool docLockFlag       = 13;           
+}
+
+//设备的联系人信息
+message DeviceContatInfo
+{
+	uint32 objectID        = 1;
+	string alldayContacter = 2;
+	string alldayTel       = 3;
+	string masterTel       = 4;
+	string slaveTel        = 5;
+}
+
+message DeviceParentPath
+{
+	uint32 holdID              = 1;
+	repeated uint32 parentID   = 2;
+}
+
+//Socol用户来源
+enum SocolSourceType
+{
+    SOCOL_SOURCE_BAIDU = 0;         //百度
+    SOCOL_SOURCE_TENCENT = 1;       //腾讯
+    SOCOL_SOURCE_GAODE = 2;         //高德(预留)
+}
+
+//socol信息，保存和第三方平台对接的数据
+message DeviceSocolParam
+{
+    SocolSourceType source_type     = 1;    //平台类型
+    string device_no                = 2;    //注册到第三方平台的设备编码
+    string service_id               = 3;    //注册到第三放平台的serviceid
+    string app_key                  = 4;    //注册到第三方平台的appkey
+    bool is_open                    = 5;    //是否打开
+}
+
+message DeviceSocolInfo
+{
+	uint32 object_id                         = 1;            //设备ObjectId
+    bool is_support_socol                    = 2;            //是否支持socol
+	repeated DeviceSocolParam socol_infos    = 3;            //socol在各平台的对接数据信息，由SocolSourceType定义的值来索引    
+}
+
+message DeviceCapacity
+{
+    uint32 object_id                        = 1;            //设备ObjectId                    
+    uint32 video_scheme                     = 2;            //视频方案（原methodToVideo字段），0-老方案 1-塞尚方案 2-新方案
+    uint32 camera_status                    = 3;            //摄像头物理连接状态（原CameraStatus字段），0-未连接 1-已连接
+    uint32 camera_type                      = 4;            //摄像头类型
+    bool is_support_driving_behavior        = 5;            //是否支持驾驶行为检测上报
+    bool is_support_split_charge            = 6;            //是否支持分离计费（原firewallService字段）
+    uint32 remote_capture_cmd_version       = 7;            //远程抓拍指令版本号（原captureLevel字段），0 - 旧版，不支持ImageEx VideoEx新版指令 1 - 支持新版抓拍指令
+    uint32 socol_capture_cmd_version        = 8;            //socol抽帧指令支持版本号，0-旧版 1-新版字节流
+}
+
+//设备信息
+message DeviceInfo
+{
+	DeviceBaseInfo base_info            = 1;
+	DeviceTypeInfo type_info            = 2;
+	DeviceStateInfo state_info          = 3;
+	repeated DeviceParam dev_params     = 4;
+	DeviceExtInfo ext_info              = 5;
+	DevicePurchaseInfo purchase_info    = 6;
+	DeviceSettingInfo setting_info      = 7;
+	DeviceContatInfo contact_info       = 9;
+	DeviceSocolInfo socol_info          = 10;
+    DeviceCapacity device_capacity      = 11;
+}
+
+//设备网关类型
+enum DeviceGatewayType
+{
+    GATEWAY_IAS = 0;                    //IAS网关
+    SAISHANG_SSVP = 1;                  //SSVP接入（塞尚设备）
+    GATEWAY_BLACKHOLE = 2;              //BlackHole网关
+    GATEWAY_MQTT = 3;                   //MQTT网关
+    HUAWEI_OC = 4;                      //华为OceanConnect平台接入
+    ALIYUN_IOT = 5;                     //阿里云IOT套件
+}
+
+message DeviceGatewayInfo
+{
+   DeviceGatewayType gateway_type = 1;          //网关类型
+   string endpoint_host = 2;
+   uint32 endpoint_port = 3; 
+}
+
+
+//渠道级设备配置
+message DeviceConfigForHold
+{
+    uint32 holdid                       = 1;                    //渠道ID
+    string app_key                      = 2;                    //渠道对应的appkey
+    string wxqrcode_key                 = 3;                    //用来生成微信二维码的key
+    uint32 video_lock_type              = 4;                    //视频锁影类型
+    string video_save_path              = 5;                    //视频文件保存位置              
+    bool is_open_shake_alarm            = 6;                    //是否支持震动报警
+    bool is_use_baidu_navi              = 7;                    //是否使用百度导航
+    bool is_open_addr_parse             = 8;                    //是否打开地址解析
+    bool is_use_tts_rom                 = 9;                    //是否使用硬件自带的TTS
+    uint32 device_type_id               = 10;                   //渠道设备类型ID
+    string media_upload_url             = 11;                   //资源上传接口
+    string licensed_tv_tag              = 12;                   //授权厂商名称
+    uint32 position_report_interval     = 13;                   //位置上报时间间隔，单位：秒
+    bool is_open_lbs                    = 14;                   //是否启用位置服务：0-不启用,1-启用
+    uint32 imei_or_seria                = 15;                   //获取设备唯一编码方式 0-IMEI 1-CPU串号
+    bool is_enable_fota                 = 16;                   //是否启用fota
+    bool is_enable_wifi_direct          = 17;                   //是否启用wifi直连
+    bool is_enable_vedio_remote_access  = 18;                   //是否启用远程调阅
+    bool is_enable_fullday_sound_record = 19;                   //是否开启24小时全天录音
+    bool is_show_watermark              = 20;                   //是否显示水印
+    bool is_show_network_privilege      = 21;                   //非麦谷卡是否显示联网特权； 默认开启
+    uint32 left_flow_unit               = 22;                   //配置卡片显示剩余流量还是剩余天数；0-剩余流量 1-剩余天数，默认显示剩余流量
+    bool is_enable_split_charge         = 23;                   //是否启用分离计费
+    
+    uint32 waterwark_show_position      = 24;                   //直播和抓拍经纬度&时间水印显示位置 1-右上角，2-右下角，3-左上角，4-左下角(统一showWatermarkPosition和watermark_location_type这两个字段)
+    uint32 collision_sensitivity        = 25;                   //碰撞灵敏度（对比原来的CollideAgile字段）
+    bool is_open_take_photo_by_accoff   = 26;                   //是否开启熄火抓拍
+    bool is_enable_cmd_status_upload    = 27;                   //是否开启指令状态上报(原upload_cmd_status_enabled)
+    bool is_enable_activation_guide     = 28;                   //是否开启激活引导动态配置
+    string activation_guide_img_url     = 29;                   //激活引导图片URL
+
+    bool is_enable_cloud_socol          = 30;                   //是否开启云端socol
+    uint32 socol_capture_retry_count    = 31;                   //设备端socol抽帧重试次数
+
+    bool is_enable_driving_behavior     = 32;                   //是否开启驾驶行为算法
+    bool is_enable_collision_detection  = 33;                   //是否开启碰撞检测算法
+
+    bool is_enable_capture_for_accon    = 34;                   //是否开启行车中拍照
+    uint32 capture_for_accon_mode       = 35;                   //行车中拍照模式，前路1、后路2 或前后路拍 3  默认后路
+    uint32 capture_for_accon_interval   = 36;                   //行车中拍照间隔，单位：秒
+
+    repeated uint32 support_protocol_type = 37;                 //支持的协议类型
+    uint32 need_notify_wxbind_type      = 38;                   //是否弹出微信绑定的桌面框
+    bool is_available_camerasdk         = 39;                   //是否集成摄像头SDK
+
+    bool is_enable_powerdown_mode       = 40;                   //记录仪是否开启省电模块（经济模式）
+
+    uint32 cloud_storage_type           = 41;                   //云存储类型（0代表七牛云 1 代表腾讯云 2代表阿里云 3代表京东云 4代表百度云）（原is_StoreCategory字段）
+    uint32 traffice_upload_type         = 42;                   //不知道干啥的
+
+    uint32 gps_upload_interval          = 43;                   //位置报文上传间隔
+}
+
+//设备信息列表
+message DeviceInfoList
+{
+    repeated DeviceInfo items = 1;
+}
+
+// 套餐基础信息
+message PackageBase {
+	uint32 packageId                   = 1;
+	string packageSn                   = 2;
+	string packageName                 = 3;
+	float packageUsage                 = 4;
+	bool isUsageReset                  = 5;
+	bool isAddPackage                  = 6;
+	uint32 periodDays                  = 7;
+	float price                        = 8;
+	string qrCode                      = 9;
+	string packageInfo                 = 10;
+}
+
+// 卡基础数据
+message SimDetails {
+    uint32 simId                        = 1;
+    string iccid                        = 2;
+    string simNo                        = 3;
+    SimLtStatus simStatus               = 4;
+    string packageName                  = 5;
+    string expireDate                   = 6;
+    float amountUsage                   = 7;
+    float monthUsage                    = 8;
+    float totalMonthUsage               = 9;
+    float surplusUsage                  = 10;
+    repeated PackageBase rewalsPackages = 11;
+    uint32 realNameStatus               = 12;
+    uint32 noRealNameRenewals           = 13;
+    uint32 activePgStatus               = 14;
+    string activePgName                 = 15;
+    uint32 activePgWay                  = 16;
+    uint32 hadAddPackage                = 17;
+    uint32 renewalTimes                 = 18;
+    float renewalAmount                 = 19;
+    string activeTime                   = 20;
+    bool overUsageStopService           = 21;
+}
+
+// 历史月用量
+message HistoryMonthUsage
+{
+	string iccid           = 1;
+	string bill_time       = 2;
+	float usage            = 3;
+}
+
+//分页信息
+message PageBaseInfo {
+  uint32 total = 1;    //总记录数
+  uint32 page_num = 2; //分页页码
+  string order = 3;    //正序或倒序
+  string sort = 4;     //排序字段
+  uint32 page_size=5;//分页大小
+}
+
+//用户类型
+message UserTypeInfo
+{
+	uint32 userTypeId      = 1;
+	uint32 userTypeName    = 2;
+	uint32 userTypeDesc    = 3;
+	uint32 createTime      = 4;
+	uint32 updateTime      = 5;
+}
+
+//用户信息
+message UserBaseInfo
+{
+    uint32 userid           = 1;               //用户ID
+    string user_name         = 2;               //用户名
+    string user_password     = 3;               //用户密码
+    string mobile           = 4;               //用户手机号码
+    string email            = 5;               //邮箱
+    string addr             = 6;               //地址
+    string unionid          = 7;               //用户绑定unionid
+    string avatar           = 8;               //头
+    string nick_name         = 9;               //昵称
+    string user_title        = 10;              //用户标题
+    string remark           = 11;              //用户备注
+    uint32 create_time       = 12;              //用户创建时间
+    uint32 update_time       = 13;              //用户更新时间
+    uint32 user_app_type      = 14;
+};
+
+//用户实名信息
+message UserRealInfo 
+{
+    uint32 userid               = 1;              //用户ID
+    RealNameState realState     = 2;              //实名状态
+    string trueName             = 3;              //真实姓名
+    string idCardNo             = 4;              //身份证号码
+    uint32 birthday             = 5;              //出生年月日
+    uint32 age                  = 6;              //年龄
+    uint32 gender               = 7;              //性别
+    string origin               = 8;              //籍贯
+    string addr                 = 9;              //身份证地址
+    string nation               = 10;             //民族
+    string idCardFaceUrl        = 11;             //身份证正面照图片地址
+    string idCardBackUrl        = 12;             //身份证背面照图片地址
+    string idCardHoldUrl        = 13;             //身份证手持找图片地址
+}
+
+//用户微信信息
+message UserWechatInfo
+{
+    uint32 user_id               = 1;
+    string wx_nick_name           = 2;
+    string union_id              = 3;
+    string wx_account            = 4;
+    string wx_head_image          = 5;
+    uint32 wx_sex                = 6;
+    string wx_area               = 7;
+    string mobile               = 8;
+    string remark               = 9;
+    uint32 create_time           = 10;
+    uint32 update_time           = 11;
+    uint32 wx_id                 = 12;
+    uint32 user_type             = 13;
+    string wx_chat_id             = 14;
+    uint32 is_subscribe          = 15;
+    uint32 is_deleted            = 16;
+}
+
+//用户公众号关注信息
+message UserWechatSubInfo
+{
+    uint32 user_id               = 1;
+    uint32 wx_service_id          = 2;
+    string wx_service_name        = 3;
+    string wx_open_id             = 4;
+    uint32 cur_bind_object_id      = 5;
+    uint32 subscribe_time        = 6;
+    uint32 update_time           = 7;
+    uint32 wx_id                 = 8;
+    uint32 is_deleted            = 9;
+}
+
+//用户使用app情况
+message UserAppInfo
+{
+    uint32 user_id               = 1;
+    uint32 app_type              = 2;
+    string app_name              = 3;
+    uint32 create_time           = 4;
+    uint32 update_time           = 5;
+}
+
+//用户绑定设备的信息
+message UserBindDeviceInfo
+{
+    uint32 user_id               = 1;
+    uint32 object_id             = 2;
+    uint32 app_type              = 3;
+    bool is_administrator        = 4;
+    uint32 bind_time             = 5;
+    uint32 update_time           = 6;
+}
+
+//用户绑定卡的信息
+message UserBindSimcardInfo
+{
+    uint32 userid               = 1;
+    uint32 simId                = 2;
+    string iccid                = 3;
+    string sim                  = 4;
+    uint32 bindTime             = 5;
+    uint32 updateTime           = 6;
+}
+
+//用户附属信息
+message UserAppend
+{
+    uint32 user_id                       = 1;
+    string user_alias_name                = 2;
+    string user_avatar                   = 3;
+    uint32 user_level                    = 4;
+	uint32 update_time                   = 5;
+
+	uint32 no_reminds_time                = 6;
+    uint32 no_reminde_time                = 7;
+	string id_card                       = 8;
+    uint32 sex                          = 9;
+    uint32 driver_year                   = 10;
+
+    string city                         = 11;
+    uint32 pwdtip1_id                   = 12;
+    string pwdtip1_answer               = 13;
+    uint32 pwdtip2_id                   = 14;
+    string pwdtip2_answer               = 15;
+
+    uint32 pwdtip3_id                   = 16;
+    string pwdtip3_answer               = 17;
+    string qq_auth_token                  = 18;
+    string wx_auth_token                  = 19;
+    string wb_auth_token                  = 20;
+
+	string introduction                 = 21;
+    uint32 focus_count                   = 22;
+    uint32 fans_count                    = 23;
+    bool is_send_wellcome                 = 24;
+}
+
+//用户报警设置
+message UserSetInfo {
+    bool is_app_start_msg                  = 1;
+    bool is_app_online_msg                 = 2;
+    bool is_app_obd_msg                    = 3;
+    bool is_app_area_msg                   = 4;
+    bool is_app_shake_msg                  = 5;
+
+    bool is_app_power_msg                  = 6;
+    bool is_app_other_msg                  = 7;
+    bool is_app_4s_msg                     = 8;
+    bool is_app_notifier_msg               = 9;
+    bool is_app_sys_msg                    = 10;
+
+    bool is_join_user_experience           = 11;
+    bool is_no_remind                     = 12;
+    bool is_sos_remind                    = 13;
+    bool is_app_illegal_msg                = 14;
+    bool is_app_sos_msg                    = 15;
+
+    bool is_vibration                    = 16;
+    bool is_app_twicemortgage             = 17;
+    bool is_app_tamper_alarm_msg            = 18;
+    bool is_app_shield_alarm_msg            = 19;
+    bool is_app_long_stop_online_alarm_msg    = 20;
+
+    bool is_app_power_on_notice_msg          = 21;
+    bool is_app_gps_seprate_alarm_msg        = 22;
+    bool is_app_cluster_alarm_msg           = 23;
+}
+
+message UserInfo {
+    UserBaseInfo baseInfo                           = 1;           //用户基本信息
+    UserRealInfo realInfo                           = 2;           //用户实名信息
+    UserWechatInfo wechatInfo                       = 3;           //用户微信信息
+    repeated UserWechatSubInfo wechatSubInfo        = 4;           //用户微信公众号关注信息
+    repeated UserAppInfo appInfo                    = 5;           //用户使用App信息
+    repeated UserBindDeviceInfo bindDeviceInfo      = 6;           //用户绑定设备的信息
+    repeated UserBindSimcardInfo bindSimcardInfo    = 7;           //用户绑定卡的信息
+}
+
+
+message  UserAndSettingInfo {
+	UserBaseInfo  user_base_info =1;
+	UserAppend user_append_info = 2;
+	repeated UserAppInfo user_app_info = 3;
+}
+
+//设置用户报警开关
+message UserSettingInfo {
+  //报警类型
+  string key = 1;
+
+  //报警开关
+  string value = 2;
+}
+
+message UserRegisterInfo
+{
+    UserBaseInfo baseInfo                           = 1;          //用户基本信息
+    UserRealInfo realInfo                           = 2;          //用户实名信息
+    UserWechatInfo wechatInfo                       = 3;          //用户微信信息
+    repeated UserWechatSubInfo wechatSubInfo        = 4;          //用户微信公众号关注信息
+    repeated UserAppInfo appInfo                    = 5;          //用户使用App信息
+    repeated UserBindDeviceInfo bindDeviceInfo      = 6;          //用户绑定设备的信息
+    repeated UserBindSimcardInfo bindSimcardInfo    = 7;          //用户绑定卡的信息
+}
+
+//供应商
+message SupplierInfo
+{
+	uint32 supplierId                              = 1;
+	string fullName                                = 2;
+	string shortName                               = 3;
+	string contact                                 = 4;
+	string contactTel                              = 5;
+	string legalName                               = 6;
+	string legalIDCardNo                           = 7;
+	string province                                = 8;
+	string city                                    = 9;
+	string region                                  = 10;
+	string addr                                    = 11;
+	string payUrl                                  = 12;
+	string remark                                  = 13;
+	uint32 createTime                              = 14;
+	uint32 updateTime                              = 15;
+}
+
+//商品分类
+message ProductCategory
+{
+	uint32 categoryId                              = 1;							//商品分类ID
+	uint32 parentId0                               = 2;							//1级父类分类ID
+	uint32 parentId1                               = 3;							//1级父类分类ID
+	uint32 parentId2                               = 4;							//2级父类分类ID
+	uint32 parentId3                               = 5;							//3级父类分类ID
+	uint32 parentId4                               = 6;							//4级父类分类ID
+	string categoryName                            = 7;
+	string categoryDesc                            = 8;
+	OnsaleState onSaleState                        = 9;
+	uint32 createTime                              = 10;
+	uint32 updateTime                              = 11;
+}
+
+//商品属性
+message ProductAttribute
+{
+	uint32 attributeId         = 1;
+	uint32 categoryId          = 2;
+	string attributeName       = 3;
+	string sortWeight          = 4;
+	uint32 createTime          = 5;
+	uint32 updateTime          = 6;
+}
+
+//商品属性值
+message ProductAttributeValue 
+{
+	uint32 attributeId     = 1;
+	uint32 value           = 2;
+	uint32 sortWeight      = 3;
+	uint32 createTime      = 5;
+	uint32 updateTime      = 6;
+}
+
+//商品信息
+message ProductBaseInfo
+{
+	uint32 productId                   = 1;
+	uint32 categoryId                  = 2;
+	uint32 supplierId                  = 3;
+	string productNameExternal         = 4;
+	string productNameInternal         = 5;
+	string subTitle                    = 6;
+	string mainImageUrl                = 7;
+	repeated string subImageUrl        = 8;
+	string detail                      = 9;
+	OnsaleState onsaleState            = 10;
+	uint32 createTime                  = 11;
+	uint32 updateTime                  = 12;
+}
+
+//商品规格 
+message ProductSpecsInfo
+{
+	uint32 specsId                             = 1;
+	uint32 productId                           = 2;
+	repeated ProductAttributeValue specsSet    = 3;
+	uint32 stock                               = 4;
+	uint32 price                               = 5;
+	repeated string imageUrl                   = 6;
+	OnsaleState onsaleState                    = 7;
+	uint32 createTime                          = 8;
+	uint32 updateTime                          = 9;
+}
+
+//订单基本信息
+message OrderBaseInfo
+{
+	uint64 orderId                             = 1;
+	string orderSN                             = 2;
+	uint32 businessId                          = 3;
+	uint32 userid                              = 4;
+	uint32 usertypeid                          = 5;
+	uint32 sourceType                          = 6;
+	string imei                                = 7;
+	string iccid                               = 8;
+	OrderState orderState                      = 9;
+	OrderAfterSaleState afterSaleState         = 10;
+	uint32 createTime                          = 11;
+	uint32 expireTime                          = 12;
+	uint32 updateTime                          = 13;
+}
+
+//订单商品信息
+message OrderProductInfo
+{
+	uint64 orderId                             = 1;
+	uint32 productId                           = 2;
+	uint32 productSpecsId                      = 3;
+	uint32 productCount                        = 4;
+	uint32 productPrice                        = 5;
+	uint32 createTime                          = 6;
+	uint32 updateTime                          = 7;
+}
+
+//订单金额信息
+message OrderAmountInfo
+{
+	uint32 orderId                             = 1;
+	uint32 totalAmount                         = 2;
+	uint32 payAmount                           = 3;
+	uint32 productAmount                       = 4;
+	uint32 shipAmount                          = 5;
+	uint32 redPackageAmount                    = 6;
+	uint32 couponsAmount                       = 7;
+	uint32 promotionAmpunt                     = 8;
+	uint32 createTime                          = 9;
+	uint32 updateTime                          = 10;
+}
+
+//订单支付信息
+message OrderPayInfo
+{
+	uint32 orderId                             = 1;
+	OrderPayState payState                     = 2;
+	OrderPayType payType                       = 3;
+	uint32 payTime                             = 4;
+	uint32 payAmount                           = 5;
+	uint32 payUserid                           = 6;
+	string payParams                           = 7;
+	uint32 createTime                          = 8;
+	uint32 updateTime                          = 9;
+}
+
+//订单信息
+message OrderInfo
+{
+	OrderBaseInfo baseInfo                     = 1;
+	repeated OrderProductInfo productList      = 2;
+	OrderAmountInfo amountInfo                 = 3;
+	OrderPayInfo payInfo                       = 4;
+}
+
+//购物车
+message ShoppingCartInfo
+{
+	uint32 cartid                              = 1;
+	uint32 businessId                          = 2;
+	uint32 userid                              = 3;
+	uint32 usertypeid                          = 4;
+	uint32 sourceType                          = 5;
+	uint32 productId                           = 6;
+	uint32 productSpecsId                      = 7;
+	uint32 productPrice                        = 8;
+	uint32 productCount                        = 9;
+	uint32 createTime                          = 10;
+	uint32 updateTime                          = 11;
+}
+
+message DataChange
+{
+    uint32 type                                 = 1;
+    uint32 entity1                              = 2;
+    uint32 entity2                              = 3;
+    uint32 entity3                              = 4;
+}
+
+//请求的用户信息
+message RequestUserInfo
+{
+	uint32 userId          = 1;                 //用户ID
+    string userName        = 2;                 //用户名
+	uint32 appType         = 3;                 //app类型
+    string clientIP        = 4;                 //客户端IP
+    uint32 clientPort      = 5;                 //客户端Port
+    string appKey          = 6;                 //appkey
+    string appVer          = 7;                 //app版本号
+    uint32 timestamp       = 8;                 //请求时间戳
+    string session         = 9;                 //请求回话
+    string sign            = 10;                //请求签名
+}
+
+//通用请求
+
+
+//基础响应
+message BaseRespInfo
+{
+    //错误码
+    sint32 error = 1;  
+    //错误原因                             
+    string reason = 2;                          
+}
+
+message ObjSelfReg
+{
+	uint32 objectid = 1;
+	uint32 holdid = 2;
+	uint32 mdtTypeID =3;
+	string imei =4;
+	string orginalIMEI =5;
+	string iccid =6;
+	string appKey =7;
+	string productBatch=8;
+	uint32 tryTimes=9;
+}
+
+message IMEIInfo{
+	string imei =1;
+	bool addFlag =2;
+	string invalidIMEI =3;
+}
+
+message ObjectBindVehicle
+{
+	uint32 objectID = 1;
+	uint32 vehicleID = 2;
+	bool isDeleted = 3;
+	bool isDefault = 4;
+	uint32 updateTime = 5;
+}
+
+message VehicleExtInfo
+{
+	uint32 vehicleID = 1;
+	uint32 createUser = 2;
+	uint32 modifier = 3;
+	bool isDeleted = 4;
+	string remark =5;
+	uint32 reserCount = 6;
+	double lastMaintainCost = 7;
+	bool isNoticeMaintain = 8;
+	bool isNoticeInsure = 9;
+	bool isNoticeInspect = 10;
+	bool isNotice = 11;
+	string imgLogo =12;
+	string bodeCode =14;
+	uint32 carState = 15;
+	uint32 oneMainMileage = 16;
+	uint32 twoMainMileage = 17;
+	uint32 ruleMileage = 18;
+	uint32 lastMaintainDate = 19;
+	uint32 lastInspec =20;
+	uint32 insureStop =21;
+	uint32 lastMaintainMile = 22;
+	uint32 maintainCount = 23;
+}
+
+message VehicleMainInfo
+{
+	uint32 vehicleID = 1;
+	uint32 maintainMileage = 2;
+	string maintainPeriod =3;
+	uint32 nextMaintainMileage = 4;
+	uint32 nextMaintainDate = 5;
+	uint32 insureCompID = 6;
+	string insureSn =7;
+	uint32 insureStartDate = 8;
+	uint32 nextInsureDate = 9;
+	string inspecPeriod =10;
+	uint32 nextInspecDate = 11;
+	uint32 insureCount = 12;
+	uint32 inspecCount = 13;
+}
+
+message VehicleBaseInfo
+{
+	uint32 vehicleID = 1;
+	string vehicleName =2;
+	string vehBrandCode =3;
+	string vehSeriesCode =4;
+
+	uint32 objectID = 5;
+	string shelfCode =6;
+	string engineCode =7;
+	string vehCertificate =8;
+	string driCertificate =9;
+	uint32 buyTime = 10;
+	uint32 createTime = 11;
+	uint32 updateTime = 12;
+	uint32 holdID = 13;
+	string seriesName =14;
+	string typeName =15;
+	uint32 vehicleProvice = 16;
+	uint32 vehicleCity = 17;
+	uint32 vehicleBindDate = 18;
+	string vehTypeCode =19;
+	uint32 installTime =20;
+}
+
+message VehicleInfo
+{
+	VehicleBaseInfo base_info = 1;
+	VehicleMainInfo main_info = 2;
+	VehicleExtInfo ext_info  = 3;
+}
+
+message ApkConfig{
+	uint32 id = 1;
+	string appKey = 2;
+	string wxQRCodeKey = 3;
+	uint32 videoLockType = 4;
+	string videoDirPath = 5;
+	uint32 needShakeListern = 6;
+	uint32 naviUseBaidu = 7;
+	uint32 naviNeedAddress = 8;
+	uint32 TTSUseRom = 9;
+	uint32 holdID = 10;
+	uint32 mDTTypeID = 11;
+	string mediaUploadURL = 12;
+	string licensedTVTag = 13;
+	uint32 updateTime = 14;
+	string remark = 15;
+	uint32 imeiOrSeria = 16;
+	bool isdeleted = 17;
+	string streamIP = 18;
+	uint32 takePhotoAccOff = 19;
+	uint32 uploadCmdStatusEnabled = 20;
+	string scheme = 21;
+	uint32 supportProtocolType = 22;
+	uint32 isCamerasdkAvailable = 23;
+	uint32 isEconomicalModel = 24;
+	uint32 neednotifyWxbindType = 25;
+	uint32 watermarkLocationType = 26;
+	string activationGuideImg = 27;
+	uint32 isActivationGuide = 28;
+	uint32 isPackageName = 29;
+	uint32 isStoreCategory = 30;
+	uint32 enableWindowConfig = 31;
+	string ejectWindow = 32;
+	uint32 trafficUploadType = 33;
+	uint32 gpsUpload = 34;
+	uint32 codeRate = 35;
+	string codeRateSetting = 36;
+	string wifiHotPotLocalIP = 37;
+	uint32 localHttpPort = 38;
+	uint32 localRtspPort = 39;
+	uint32 peccancySnapSecond = 40;
+	uint32 peccancySnapNumber = 41;
+	string peccancySnapCmd = 42;
+	uint32 sleepSecond = 43;
+	string hotspotName = 44;
+	string hotspotPass = 45;
+	uint32 firewall = 46;
+	uint32 videoEnable = 47;
+	bool isDriftFilter = 48;
+	bool isEnableFota = 49;
+	bool isEnableWifiDirect = 50;
+	bool isEnableVedioRemoteAccess = 51;
+	bool isEnableFullDaySoundRecord = 52;
+	bool isShowWatermark = 53;
+	bool isShowNetPrivilege = 54;
+	bool leftFlowUnit = 55;
+	bool isEnableSplitCharge = 56;
+	bool isEnableCouldSocol = 57;
+}
+
+message Point
+{
+    int32 lat = 1;
+    int32 lon = 2;
+}
+
+enum EfenceType
+{
+    DISTRICT_EFENCE = 0;            //行政区电子围栏
+    CIRCULAR_EFENCE = 1;            //原型电子围栏
+    POLYGON_EFENCE = 2;             //多边形电子围栏
+}
+
+enum EfenceActionType
+{
+    EFENCE_ACTION_IN = 0;           //进电子围栏
+    EFENCE_ACTION_OUT = 1;          //出电子围栏
+    EFENCE_ACTION_INOUT = 2;        //进出电子围栏
+}
+
+message DistrictInfo
+{
+    uint32 province_id = 1;
+    string province_name = 2;
+    uint32 city_id = 3;
+    string city_name = 4;
+    uint32 region_id = 5;
+    string region_name = 6;
+}
+
+message CircleInfo
+{
+    Point central = 1;
+    uint32 radius = 2;
+}
+
+message PolygonInfo
+{
+    repeated Point point_list = 1;
+}
+
+message EfenceInfo
+{
+    EfenceType type =1;
+    EfenceActionType action_type = 2;
+    uint32 efence_id = 3;
+    DistrictInfo district_info = 4;
+    CircleInfo  cricle_info = 5;
+    PolygonInfo polygon_info = 6;
+}
+
+
+//车辆类型信息
+message VehicleTypeBaseInfo {
+  string brand_code = 1;  //品牌代码
+  string series_code = 2; //车系代码
+  string type_code = 3;   //车型代码
+  string brand_name=4;
+  string series_name=5;
+  string type_name=6;
+  string brand_logo_url=7;
+}
+
