@@ -1,0 +1,653 @@
+syntax = "proto3";
+
+package mapgoo.paas.live;
+
+option go_package = "api";
+
+import public "mapgoo.paas.base.proto";
+
+//直播类型
+enum TYPE_LIVE
+{
+	LIVE_DEFAULT = 0;
+	RTMP = 1;
+	HLS = 2;
+}
+
+//获取直播信息请求参数
+message LiveParam
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//直播类型，0表示rtmp,1表示hls
+	TYPE_LIVE live_type = 2;
+	
+	//摄像头通道
+	uint32 channel = 3;		
+	
+	//用户Id
+	uint32 user_id = 4;	
+	
+	//视频id
+	string ssv_id = 5;	
+	
+	//上一次摄像头通道
+	uint32 pre_channel = 6;		
+	
+	//重试次数
+	uint64 times = 7;							
+}
+
+//直播信息
+message LiveInfo
+{
+	//设备id
+	uint32 object_id = 1;
+
+	//设备imei
+	string imei = 2;
+
+	//直播地址	
+	string live_url = 3;
+	
+	//视频id
+	string ssv_id = 4;	
+
+	//请求token
+	string token = 5;	
+	
+	//设备状态
+	uint32 device_type = 6;
+	
+	//状态
+	uint32 status = 7;	
+	
+	//更新时间
+	string update_time = 8;		
+	
+	//设备个数
+	uint32 ssvid_count = 9;	
+	
+	//设备类型
+	uint32 mdt_type_id = 10;	
+	
+	//等待时间
+	uint64 wait_time = 11;						
+}
+
+//驾驶行为事件
+message DrivingBehavior
+{
+	//设备id
+	uint32 object_id = 1;	
+	
+	//驾驶行为类型
+	uint32 drive_event_type = 2;
+
+	//行程id
+	uint32 travel_id = 3;	
+	
+	//驾驶行为事件的开始时间
+	string drive_event_start_time = 4;	
+
+	//驾驶行为事件的结束时间
+	string drive_event_stop_time = 5;	
+
+	//创建时间
+	uint64 create_time = 6;	
+	
+	//更新时间
+	uint64 update_time = 7;	
+	
+	//开始经度
+	int32 start_lng = 8;	
+	
+	//开始纬度
+	int32 start_lat = 9;	
+	
+	//结束经度
+	int32 stop_lng = 10;
+	
+	//结束纬度
+	int32 stop_lat = 11;	
+}
+
+//视频标签
+message DriveEventLable
+{
+	//标签id
+	uint32 event_id = 1;
+	
+	//设备ObjectId
+	uint32 object_id = 2;
+
+	//标签类型，1-驾驶事件，2-用户自定义，3-AI事件
+	uint32 lable_type = 3;
+
+	//标签二级类型，如驾驶事件（0-急加速 1-急减速 2-急转弯）
+	uint32 lable_sub_type = 4;
+
+	//标签文字说明
+	string lable_desc = 5;
+
+	//定位时间
+	string gps_time = 6;
+
+	//接收时间
+	string rcv_time = 7;
+
+	//开始经度
+	int32 start_lon = 8;
+
+	//开始纬度
+	int32 start_lat = 9;
+
+	//开始时间
+	string start_time = 10;
+
+	//结束经度
+	int32 stop_lon = 11;
+
+	//结束纬度
+	int32 stop_lat = 12;
+
+	//结束时间
+	string stop_time = 13;
+}
+
+//设备事件信息（产生事件）
+message DeviceEvent
+{
+	//事件ID
+	uint32 event_id = 1;	
+	
+	//设备ObjectId
+	uint32 object_id = 2;
+	
+	//设备(云镜)序列号
+	string device_id = 3;		
+	
+	//事件类型 1-ACC点火、2-ACC熄火、3-急刹、4-锁影
+	uint32 event_type = 4;		
+	
+	//事件触发时间
+	string event_time = 5;	
+	
+	//是否收藏 1-已收藏 0-未收藏
+	uint32 is_loved = 6;
+	
+	//事件发生时的经度
+	int32 lng = 7;	
+	
+	//纬度
+	int32 lat = 8;	
+	
+	//速度
+	uint32 speed = 9;	
+	
+	//方向
+	uint32 direct = 10;		
+	
+	//定位时间
+	uint32 gpstime = 11;	
+	
+	//关键视频云端url
+	repeated string key_video_url = 12;		
+
+	//视频开始时间，精确到毫秒
+	uint64 video_btime = 13;
+	
+	//视频结束时间，精确到毫秒
+	uint64 video_etime = 14;
+	
+	//视频大小，单位（kb）
+	uint32 video_size = 15;		
+	
+	//关键视频实际在云镜中的存储路径
+	string key_video_path = 16;		
+
+	//关键图片云端url
+	repeated string key_image_url = 17;		
+
+	//图片抽帧时间，精确到毫秒
+	string image_time = 18;	
+	
+	//图片大小，单位（kb）
+	uint32 image_size = 19;	
+	
+	//关键视频缩略图的云端url
+	string key_thum_url = 20;		
+
+	//原始视频实际在云镜中的存储路径
+	string ori_video_path = 21;	
+	
+	//关联视频在云镜中的存储路径
+	repeated string rel_video_path = 22;	
+	
+	//是添加水印 1：添加
+	uint32 water_mark = 23;			
+}
+
+//云类型
+enum EM_CLOUD_TYPE
+{
+	//京东云
+	EM_CLOUD_JD = 0;
+
+	//阿里云
+	EM_CLOUD_ALI = 1;
+}
+
+//目录树
+message MediaFileIndex
+{
+	//目录ID，使用雪花算法生成
+	uint32 index_id = 1;	
+	
+	//设备ID
+	uint32 object_id = 2;	
+	
+	//设备imei
+	uint32 imei = 3;
+
+	//设备摄像头通道号
+	uint32 channel = 4;		
+	
+	//设备本地文件名
+	string local_file_name = 5;		
+
+	//设备本地文件路径，带文件名
+	string local_file_path = 6;	
+	
+	//文件格式,例如：MP4 AVI
+	string file_format = 7;	
+	
+	//文件大小，以kb为单位
+	uint32 file_size = 8;	
+	
+	//分辨率， 0-1080p 1-720p 2-480p 3-240p 4-120p
+	uint32 resolution = 9;	
+	
+	//码率
+	uint32 rate = 10;	
+	
+	//文件类型，0-设备本地录制， 1-直播录制
+	uint32 file_type = 11;	
+	
+	//文件存储类型，按比特位存储，第一个bit为保存设备本地存储标记，第二个bit位保存云端存储标记，例如：0x0001表示设备本地已保存 0x0003-设备云端和本地都保存
+	uint32 storage_type = 12;	
+	
+	//若文件保存到了云端，则字段表示云存储的url，若未保存，此字段为NULL
+	string cloud_url = 13;
+	
+	//视频文件缩略图URL
+	string thumb_url = 14;	
+	
+	//视频录制的开始时间
+	string begin_time = 15;	
+	
+	//视频录制的结束时间
+	string end_time = 16;	
+	
+	//文件修改（包括创建、删除和修改）时间
+	string file_modify_time = 17;
+	
+	//视频时长
+	uint32 duration = 18;
+	
+	//目录版本号，取值服务端生成目录的时间
+	uint32 version = 19;	
+	
+	//视频存储到京东aws的目录名
+	string aws_bucket_name = 20;
+	
+	//视频存储到京东aws的文件名
+	string aws_file_name = 21;	
+	
+	//视频文件元数据在视频文件中的偏移量（单位：字节）
+	uint32 meta_data_offset = 22;	
+
+	//视频文件元数据大小（单位：字节）
+	uint32 meta_data_size = 23;
+	
+	//记录插入时间
+	string insert_time = 24;
+	
+	//记录更新时间
+	string update_time = 25;
+	
+	//云存储类型 0-京东云 1-阿里云
+	EM_CLOUD_TYPE cloud_type = 26;			
+}
+
+//视频文件类型
+enum SOURCE_TYPE
+{
+	DEFAULT = 0;
+	DEV = 1;
+	CLOUD = 2;
+}
+
+//时间轴
+message TimeLine
+{
+	//开始时间
+	uint64 start_time = 1;
+	
+	//结束时间
+	uint64 end_time = 2;	
+	
+	//要播放的视频文件类型（1-设备本地存储的文件，2-云端存储的类型，3-本地和云端存储的类型）
+	SOURCE_TYPE source_type = 3;		
+}
+
+//调阅时间轴查询
+message MediaTimeLine
+{
+	//设备id
+	uint32 object_id = 1;
+	
+	//设备imei
+	string imei = 2;
+	
+	//摄像头通道号
+	uint32 channel = 3;	
+	
+	//表示当前系统时间，播放器可以基于这个字段对时
+    uint32 current = 4;	
+	
+	//云存储类型
+    uint32 cloudType = 5;	
+	
+	//时间轴列表
+	repeated TimeLine time_list = 6;	
+}
+
+//直播摄像头状态
+enum CAMERA_STATE
+{
+	CAMERA_DEFAULT 		= 0;
+	CAMERA_STATE_OFFLINE 	= 1;
+	CAMERA_STATE_ONLINE 	= 2;
+	CAMERA_STATE_NOT_EXST  	= 3;
+    CAMERA_STATE_SLEEP		= 4;
+	CAMERA_STATE_END 		= 0xff;
+}
+
+//直播摄像头类型
+enum CAMERA_TYPE
+{
+	CAMERA_TYPE_DEFAULT 				= 0;
+	CAMERA_TYPE_FROUNT 					= 1;
+	CAMERA_TYPE_BACK 					= 2;
+	CAMERA_TYPE_MID						= 3;
+	CAMERA_TYPE_FROUNT_BACK 			= 4;
+	CAMERA_TYPE_FRNOT_MID				= 5;
+	CAMERA_TYPE_BACK_MID	 			= 6;
+	CAMERA_TYPE_FROUNT_BACK_MID			= 7;
+	CAMERA_TYPE_END 					= 0xff;
+}
+
+//媒体类型
+enum MEDIA_TYPE
+{
+	MEDIA_TYPE_DEFAULT = 0;
+    MEDIA_TYPE_PIC = 1;
+    MEDIA_TYPE_VIDEO = 2;
+}
+
+//图片抓拍
+message MediaInfo
+{
+	//类型： 1 - 图片 2 - 视频
+	MEDIA_TYPE type = 1;	
+	
+	//url
+	string url = 2;		
+	
+	//定位时间
+	uint32 gps_time = 3;
+
+	//接收时间
+	uint32 recv_time = 4;
+
+	//经度
+	uint32 lng = 5;
+
+	//纬度
+	uint32 lat = 6;
+
+	//里程
+	uint32 mileage = 7;
+
+	//速度
+	uint32 speed = 8;
+
+	//方向
+	uint32 direction = 9;
+
+	//缩略图url
+    string thumbnail_url = 10;   		        
+}
+
+//直播url信息
+message LiveUrlInfo
+{
+	//摄像头,
+    CAMERA_TYPE camera_type = 1;
+
+	//url
+    string url = 2;
+}
+
+//云文件列表
+message MediaFileInfo
+{
+	//文件编号
+	uint32 id = 1;
+
+	//设备使用aws上传视频到京东的保存目录
+	string aws_bucket_name = 2;
+
+	//京东保存的文件名
+	string aws_file_name = 3;
+
+	//视频moov在文件中保存的偏移，包含metaData四个字节长度
+	uint32 moov_offset = 4;
+
+	//视频moov在文件中的长度
+	uint32 moov_size = 5;
+
+	//视频录制的起始时间
+	string begin_time = 6;
+
+	//视频录制的结束时间
+	string end_time = 7;
+}
+
+//用户配置
+message ApkSigConfig
+{
+	//直播ip
+	string stream_ip = 1;
+}
+
+//配置参数
+message MDTParamInfo
+{
+	//设备id
+	uint32 object_id = 1;
+	
+	//设备imei
+	string imei = 2;
+	
+	//配置类型
+	string param_type = 3;
+	
+	//配置值
+	string param_value = 4;
+}
+
+//摄像头
+message CameraInfo
+{
+	//摄像头类型
+	CAMERA_TYPE camera_type = 1;
+
+	//摄像头状态
+	CAMERA_STATE camera_state = 2;
+}
+
+//水印
+message MdeiaWatermak
+{
+	//视频id
+	uint64 vedio_id = 1;
+
+	//任务id
+	uint64 task_id = 2;
+
+	//文件名
+	string out_file_name = 3;
+}
+
+//视频分享到广场
+message SqureInfo
+{
+	//视频id
+	uint64 vedio_id = 1;
+
+	//用户id
+	uint32 user_id = 2;
+
+	//用户名称
+	string user_name = 3;
+
+	//
+	string user_avatar = 4;
+
+	//视频url
+	string vedio_url = 5;
+
+	//图片url
+	string thum_url = 6;
+
+	//
+	string shoot_time = 7;
+
+	//经度
+	int32 lng = 8;
+
+	//纬度
+	int32 lat = 9;
+
+	//速度
+	uint32 speed = 10;
+
+	//方向
+	uint32 direct = 11;
+
+	//定位时间
+	string gps_time = 12;
+
+	//视频描述
+	string vedio_desc = 13;
+
+	//
+	uint32 comment_count = 14;
+
+	//
+	uint32 loved_count = 15;
+
+	//
+	uint32 view_count = 16;
+
+	//
+	uint32 report_count = 17;
+
+	//
+	uint32 video_flag = 18;
+
+	//市
+	string city = 19;
+
+	//状态
+	uint32 state = 20;
+}
+
+//随手拍
+message PeccancyReport
+{
+	//序列号
+	uint64 rec_id = 1;
+
+	//用户id
+	uint32 user_id = 2;
+
+	//纬度
+	int32 lat = 3;
+
+	//经度
+	int32 lng = 4;
+
+	//市
+	string city = 5;
+
+	//描述
+	string desc = 6;
+
+	//图片
+	string image = 7;
+
+	//视频
+	string video = 8;
+
+	//随手拍类型
+	uint32 peccancy_type = 9;
+
+	//随手拍时间
+	string peccancy_time = 10;
+
+	//随手拍地址
+	string peccancy_address = 11;
+
+	//状态
+	uint32 status = 12;
+
+	//
+	string reason = 13;
+
+	//
+	uint32 plate_number = 14;
+
+	//
+	uint32 plate_number_type = 16;
+
+	//用户名称
+	string user_name = 17;
+
+	//卡id
+	string idcard = 18;
+
+	//手机号码
+	string mobile = 19;
+
+	//备注
+	string remark = 20;
+
+	//回执码
+	uint32 report_code = 21;
+
+	//验证码
+	string verify_code = 22;
+
+	//管理员
+	string admin = 23;
+
+	//设备imei
+	string imei = 24;
+
+	//序号
+	uint64 seq = 25;
+}

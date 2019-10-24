@@ -1,0 +1,582 @@
+syntax = "proto3";
+
+package mapgoo.event;
+
+option go_package = "api";
+
+import public "github.com/golang/protobuf/ptypes/any/any.proto";
+import public "mapgoo.paas.base.proto";
+import public "mapgoo.paas.travel.proto";
+import public "mapgoo.paas.live.proto";
+
+//业务类型
+enum EM_BUSSI_TYPE
+{
+	//默认值
+	EM_BUSSITYPE_DEFAULT = 0;
+
+	//用户事件
+	EM_BUSSITYPE_USER = 1;
+
+	//设备事件
+	EM_BUSSITYPE_DEVICE = 2;
+
+	//卡事件
+	EM_BUSSITYPE_CARD = 3;
+}
+
+//类型子类
+enum EM_SUB_TYPE
+{
+	//默认值
+	EM_SUBTYPE_DEFAULT = 0;
+
+	//app手机、微信公众号关注的注册、注销
+	EM_SUBTYPE_USERREG = 1;
+
+	//用户绑定、解绑
+	EM_SUBTYPE_USERBIND = 2;
+
+	//新版添加、卡变更
+	EM_SUBTYPE_DEVICESELFREG = 3;
+
+	//旧版添加、卡变更
+	EM_SUBTYPE_DEVICEOLDSELFREG = 4;
+
+	//web设备添加
+	EM_SUBTYPE_DEVICEADD = 5;
+
+	//web设备删除
+	EM_SUBTYPE_DEVICEDEL = 6;
+
+	//web设备转移
+	EM_SUBTYPE_DEVICEMOVE = 7;
+
+	//设备激活
+	EM_SUBTYPE_DEVICEACTIVATE = 8;
+
+	//设备续费
+	EM_SUBTYPE_DEVICERENEWALS = 9;
+
+	//设备过期
+	EM_SUBTYPE_DEVICEEXPIRE = 10;
+
+	//设备上线、离线
+	EM_SUBTYPE_DEVICEONLINE = 11;
+
+	//行程启动、熄火
+	EM_SUBTYPE_DEVICETRAVEL = 12;
+
+	//告警开始、结束
+	EM_SUBTYPE_DEVICEALARM = 13;
+
+	//行政区域变更
+	EM_SUBTYPE_DEVICEREGION = 14;
+
+	//直播开始、结束
+	EM_SUBTYPE_DEVICELIVE = 15;
+
+	//视频上报和图片上报
+	EM_SUBTYPE_DEVICEMEDIA = 16;
+
+	//人脸识别结果
+	EM_SUBTYPE_DEVICERECOGNITION = 17;
+
+	//acc状态变更
+	EM_SUBTYPE_DEVICEACCSTATUS = 18;
+
+	//卡实名
+	EM_SUBTYPE_SIMREALNAME = 19;
+
+	//卡续费
+	EM_SUBTYPE_SIMRENEWALS = 20;
+
+	//卡调档（删除）
+	EM_SUBTYPE_SIMUPDATEMEAL = 21;
+
+	//机卡分离
+	EM_SUBTYPE_SIMSEPARATEDEVICE = 22;
+
+	//卡变更
+	EM_SUBTYPE_SIMMODIFY = 23;
+}
+
+//请求数据
+message EventReq
+{
+	//流水号
+	uint64 sequence = 1;
+
+	//时间戳
+	uint64 time = 2;
+
+	//业务类型
+	EM_BUSSI_TYPE bussi_type = 3;
+
+	//类型子类
+	EM_SUB_TYPE sub_type = 4;
+
+	//事件数据
+	google.protobuf.Any details = 5;
+}
+
+//一、用户事件
+//1.用户注册、注销
+//app手机、微信公众号关注的注册、注销
+message UserRegEvent
+{
+	//注册类型
+	uint32 register_type = 1;
+
+	//用户ID
+	uint32 user_id = 2;
+
+	//用户
+	uint32 user_name = 3;
+
+	//应用ID
+	string app_id = 4;
+
+	//app名称
+	string app_name = 5;
+
+	//微信唯一ID
+	string union_id = 6;
+
+	//手机号
+	string mobile = 7;
+
+	//app版本
+	string app_version = 8;
+
+	//app用户id
+	string android_user_id = 9;
+
+	//类型(0：注销，1：注册)
+	uint32 oper_type = 10;
+}
+
+//2.用户绑定相关
+//用户绑定、解绑
+message UserBindEvent
+{
+	//是否管理员
+	bool is_admin = 1;
+
+	//用户ID
+	uint32 user_id = 2;
+
+	//设备ID
+	uint32 object_id = 3;
+
+	//设备imei
+	string imei = 4;
+
+	//sim卡号
+	string iccid = 5;
+
+	//类型(0：解绑，1：绑定)
+	string oper_type = 6;
+}
+
+//二、设备事件
+//1.设备自注册
+//新版添加、卡变更
+message DeviceSelfRegisterEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//用户ID
+	string hold_id = 2;
+
+	//终端类型ID
+	string mdt_type_id = 3;
+
+	//IMEI号
+	string imei = 4;
+
+	//设备apk版本号
+	string apk_version = 5;
+
+	//sim卡号
+	string iccid = 6;
+
+	//原IMEI号
+	string orginal_imei = 7;
+
+	//apk产品类型
+	string app_key = 8;
+}
+
+//旧版添加、卡变更
+message DeviceOldSelfRegisterEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//用户ID
+	uint32 hold_id = 2;
+
+	//终端类型ID
+	uint32 mdt_type_id = 3;
+
+	//设备apk版本号
+	string apk_version = 4;
+
+	//sim卡号
+	string sim = 5;
+
+	//是否变更
+	uint32 is_modify = 6;
+
+	//原IMEI号，不带其他字符
+	string original_imei = 7;
+}
+
+//2.设备
+//web设备添加
+message DeviceAddEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//终端类型ID
+	uint32 mdt_type_id = 2;
+
+	//sim卡号
+	string sim = 3;
+
+	//设备名称
+	string obj_name = 4;
+
+	//用户ID
+	uint32 holdid = 5;
+}
+
+//web设备删除
+message DeviceDelEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+}
+
+//web设备转移（objectid统一改为base库中的DeviceId）
+message DeviceMoveEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//新用户ID
+	uint32 new_hold_id = 2;
+
+	//旧用户ID
+	uint32 old_hold_id = 3;
+}
+
+//设备激活
+message DeviceActivateEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//用户id
+	uint32 uid = 2;
+}
+
+//设备续费
+message DeviceRenewalsEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//续费周期：year 台年，month 台月，day 台天，long 终身
+	string period = 2;
+
+	//数量，代表 n年/n月/n天，终身就1个，不用多想了
+	uint32 times = 3;
+
+	//计费规则，1按续费当天开始计费，2按过期日期开始计费（针对过期设备）
+	uint32 billing_rule = 4;
+
+	//交易单号
+	string customer_bill_no = 5;
+
+	//商户
+	string merchant = 6;
+}
+
+//设备过期
+message DeviceExpireEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//服务过期时间
+	string expire_time = 2;
+}
+
+//2.在离线状态
+//设备上线、离线
+message DeviceOnlineEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//设备状态(0：离线，1：在线)
+	uint32 obj_status = 2;
+
+	//网关地址
+	string gateway_ip = 3;
+
+	//网关端口
+	uint32 gateway_port = 4;
+
+	//网关类型
+	uint32 gateway_type = 5;
+
+	//设备ip
+	string device_ip = 6;
+
+	//设备端口
+	uint32 device_port = 7;
+
+	//更新时间
+	uint32 update_time = 8;
+}
+
+//4.行程状态
+//行程启动、熄火
+message DeviceTravelEvent
+{
+	mapgoo.paas.travel.TravelInfo travel = 1;
+}
+
+//5.告警状态
+//告警开始、结束
+message DeviceAlarmEvent
+{
+	//告警流水号
+	uint64 alarm_id = 1;
+
+	//设备ID
+	uint32 object_id = 2;
+
+	//告警类型ID
+	uint32 alarm_type_id = 3;
+
+	//类型ID
+	uint32 polygon_id = 4;
+
+	//状态(0：告警结束，1：告警开始)
+	uint32 alarm_status = 5;
+}
+
+//6.行政区域变更
+message DeviceRegionEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//设备ID
+	uint32 objectid = 2;
+
+	//省id
+	uint32 old_province_id = 3;
+
+	//省名称
+	string old_province = 4;
+
+	//市id
+	uint32 old_city_id = 5;
+
+	//市名称
+	string old_city = 6;
+
+	//区id
+	uint32 old_region_id = 7;
+
+	//区名称
+	string old_region = 8;
+
+	//省id
+	uint32 province_id = 9;
+
+	//省名称
+	string province = 10;
+
+	//市id
+	uint32 city_id = 11;
+
+	//市名称
+	string city = 12;
+
+	//区id
+	uint32 region_id = 13;
+
+	//区名称
+	string region = 14;
+}
+
+//7.直播
+//直播开始、结束
+message DeviceLiveEvent
+{
+	//状态(0：结束，1：开始)
+	uint32 live_status = 1;
+
+	//rtmp server address
+	string server_addr = 2;
+
+	//rtmp server port
+	uint32 server_port = 3;
+
+	//client IP address
+	string addr = 4;
+
+	//nginx client id (displayed in log and stat)
+	uint32 client_id = 5;
+
+	//application name
+	string app = 6;
+
+	//client flash version
+	string flash_ver = 7;
+
+	//client swf url
+	string swf_url = 8;
+
+	//tcUrl
+	string tc_url = 9;
+
+	//client page url
+	string page_url = 10;
+
+	//stream name
+	string name = 11;
+}
+
+//8.抓拍结果上报
+//视频上报和图片上报
+message DeviceMediaEvent
+{
+	//设备事件信息
+	mapgoo.paas.live.DeviceEvent event = 1;
+}
+
+//9.人脸识别结果
+message DeviceRecognitionEvent
+{
+	//设备id和imei
+	mapgoo.paas.base.DeviceId device_id = 1;
+
+	//车辆ID
+	uint32 vehicle_id = 2;
+
+	//图片识别结果 0:未识别、1:识别通过、2:识别未通过、3:识别异常
+	uint32 recognition_result = 3;
+
+	//识别率分数
+	uint32 recognition_rate = 4;
+
+	//错误码
+	string error_code = 5;
+}
+
+//10.acc状态变更
+message DeviceAccStatusEvent
+{
+	//设备ID
+	uint32 object_id = 1;
+
+	//acc状态（0：启动 1：熄火）
+	uint32 acc_status = 2;	
+}
+
+//三、卡事件
+//1.卡实名
+message SimRealnameEvent
+{
+	//iccid号
+	string iccid = 1;
+
+	//手机号
+	string mobile = 2;
+
+	//身份证
+	string idcard = 3;
+
+	//手机号
+	string name = 4;
+
+	//性别
+	uint32 sex = 5;
+
+	//实名认证结果
+	uint32 real_state = 6;
+}
+
+//2.卡续费
+message SimRenewalsEvent
+{
+	//iccid
+	string iccid = 1;
+
+	//续费金额（分）
+	uint32 amount = 2;
+
+	//续费类型 1续费开通,2续费升级套餐,3续费叠加包
+	uint32 renewals_type = 3;
+
+	//手机号
+	string mobile = 4;
+
+	//套餐名称
+	string package_name = 5;
+}
+
+//3.卡调档（删除）
+message SimUpdateMealEvent
+{
+	//iccid
+	string iccid = 1;
+
+	//旧资费名称
+	string old_rate_name = 2;
+
+	//新资费名称
+	string new_rate_name = 3;
+}
+
+//4.机卡分离
+message SimSeparateDeviceEvent
+{
+	//imei
+	uint32 imei = 1;
+
+	//iccid
+	string iccid = 2;
+
+	//手机号
+	string mobile = 3;
+}
+
+//5.卡变更
+//卡激活
+message SimModifyEvent
+{
+	//iccid
+	string iccid = 1;
+
+	//微信id
+	string wenxin_id = 2;
+
+	//手机号
+	string mobile = 3;
+
+	//1:流量不足停机，2：到期停机
+	uint32 busi_type = 4;
+
+	//扩展字段
+	string param = 5;
+}
