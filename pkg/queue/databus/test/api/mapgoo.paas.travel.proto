@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package mapgoo.paas.travel;
+
+option go_package = "api";
+
+//轨迹
+message TrackInfoSimple
+{
+	//里程
+	uint32 mileage = 1;		
+	
+	//速度，仅GPS定位时有效，其它情况为0xFFFFFFFF	单位km/h
+    uint32 speed = 2;		
+	
+	//方向，仅GPS定位时有效，其它情况为0xFFFFFFFF，单位：度
+    uint32 direction = 3;	
+	
+	//纬度
+	int32 lat = 4;		
+	
+	//经度
+	int32 lng = 5;		
+	
+	//接收时间
+	uint64 recv_time = 6;
+	
+	//定位时间
+	uint64 gps_time = 7;			
+}
+
+//行程信息
+message TravelInfo
+{
+	//设备id
+	uint32 object_id = 1;
+
+	//行程id
+	uint64 travel_id = 2;
+
+	//行程标志 0：熄火 1：启动
+	bool is_completed = 3;
+
+	//行程里程
+	uint32 travel_mileage = 4;	
+	
+	//行程油耗
+	uint32 travel_oil = 5;		
+	
+	//行程时长
+	uint32 travel_period = 6;	
+	
+	//驾驶时长
+	uint32 drive_period = 7;	
+	
+	//超速次数
+	uint32 over_speed_count = 8;	
+	
+	//急加速次数
+	uint32 celerate_count = 9;		
+	
+	//急减速次数
+	uint32 decelerate_count = 10;	
+	
+	//停车未熄火次数
+	uint32 stop_accon_count = 11;	
+	
+	//
+	uint32 start_flag = 12;
+
+	//
+	uint32 stop_flag = 13;
+
+	//
+	uint64 start_event_id = 14;
+
+	//
+	uint64 stop_event_id = 15;
+
+	//
+	uint64 stay_id = 16;
+
+	//备注
+	string remark = 17;		
+	
+	//平均速度
+	uint32 avg_speed = 18;	
+	
+	//最大速度
+	uint32 max_speed = 19;	
+	
+	//
+	uint32 pos_count = 20;
+
+	//
+	uint32 total_speed = 21;
+
+	//故障个数
+	uint32 bd_count = 22;	
+	
+	//故障码
+	string bd_code = 23;	
+
+	//
+	repeated string seq_fault_code = 24;
+
+	//行程启动信息
+	TrackInfoSimple start_pos = 25;		
+
+	//行程停止信息
+	TrackInfoSimple stop_pos = 26;		
+};
+
