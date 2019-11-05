@@ -13,7 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/bilibili/atreus/tool/pkg"
+	"github.com/mapgoo-lab/atreus/tool/pkg"
 )
 
 var (

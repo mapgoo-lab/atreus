@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bilibili/atreus/tool/protobuf/pkg/gen"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/generator"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/gen"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/generator"
 )
 
 func main() {

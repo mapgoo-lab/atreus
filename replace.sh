@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sed -i "s/github.com\/bilibili\/atreus/github.com\/mapgoo-lab\/atreus/g" `grep github.com/bilibili/atreus -rl ./`
+sed -i "s/github.com\/mapgoo-lab\/atreus/github.com\/mapgoo-lab\/atreus/g" `grep github.com/mapgoo-lab/atreus -rl ./`
 
 if [ -d tool/atreus ]; then
     mv tool/atreus tool/atreus

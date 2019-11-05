@@ -78,7 +78,7 @@ func (m *Status) GetDetails() []*any.Any {
 }
 
 func init() {
-	proto.RegisterType((*Status)(nil), "bilibili.rpc.Status")
+	proto.RegisterType((*Status)(nil), "mapgoo-lab.rpc.Status")
 }
 
 func init() { proto.RegisterFile("internal/types/status.proto", fileDescriptor_status_88668d6b2bf80f08) }

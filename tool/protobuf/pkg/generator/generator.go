@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bilibili/atreus/tool/protobuf/pkg/gen"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/naming"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/typemap"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/utils"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/gen"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/naming"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/typemap"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/utils"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/pkg/errors"
@@ -22,8 +22,8 @@ import (
 
 const Version = "v0.1"
 
-var GoModuleImportPath = "github.com/bilibili/atreus"
-var GoModuleDirName = "github.com/bilibili/atreus"
+var GoModuleImportPath = "github.com/mapgoo-lab/atreus"
+var GoModuleDirName = "github.com/mapgoo-lab/atreus"
 
 type Base struct {
 	Reg *typemap.Registry

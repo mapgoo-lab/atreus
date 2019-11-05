@@ -12,12 +12,12 @@
 ### 编译安装
 #### Method 1. With go get
 ```shell
-go get -u github.com/bilibili/atreus/tool/testgen
+go get -u github.com/mapgoo-lab/atreus/tool/testgen
 $GOPATH/bin/testgen -h
 ```
 #### Method 2. Build with Go
 ```shell
-cd github.com/bilibili/atreus/tool/testgen
+cd github.com/mapgoo-lab/atreus/tool/testgen
 go build -o $GOPATH/bin/testgen
 $GOPATH/bin/testgen -h
 ```

@@ -17,8 +17,8 @@ import (
 	"context"
 	{{if .EnableBatch }}"sync"{{end}}
 NEWLINE
-	"github.com/bilibili/atreus/pkg/cache"
-	{{if .EnableBatch }}"github.com/bilibili/atreus/pkg/sync/errgroup"{{end}}
+	"github.com/mapgoo-lab/atreus/pkg/cache"
+	{{if .EnableBatch }}"github.com/mapgoo-lab/atreus/pkg/sync/errgroup"{{end}}
 	{{.ImportPackage}}
 NEWLINE
 	{{if .EnableSingleFlight}}	"golang.org/x/sync/singleflight" {{end}}

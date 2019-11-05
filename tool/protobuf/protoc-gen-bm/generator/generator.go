@@ -6,11 +6,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bilibili/atreus/tool/protobuf/pkg/generator"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/naming"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/tag"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/typemap"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/utils"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/generator"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/naming"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/tag"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/typemap"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/utils"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
@@ -115,8 +115,8 @@ func (t *bm) generateImports(file *descriptor.FileDescriptorProto) {
 	//t.P(`	`,t.pkgs["context"], ` "context"`)
 	t.P(`	"context"`)
 	t.P()
-	t.P(`	bm "github.com/bilibili/atreus/pkg/net/http/blademaster"`)
-	t.P(`	"github.com/bilibili/atreus/pkg/net/http/blademaster/binding"`)
+	t.P(`	bm "github.com/mapgoo-lab/atreus/pkg/net/http/blademaster"`)
+	t.P(`	"github.com/mapgoo-lab/atreus/pkg/net/http/blademaster/binding"`)
 
 	t.P(`)`)
 	// It's legal to import a message and use it as an input or output for a

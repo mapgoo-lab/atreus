@@ -101,7 +101,7 @@ func main() {
 
 func ipFromDiscovery(appID, env string) string {
 	d := &Discovery{
-		Nodes:      []string{"discovery.bilibili.co", "api.bilibili.co"},
+		Nodes:      []string{"discovery.mapgoo-lab.co", "api.mapgoo-lab.co"},
 		HttpClient: http.DefaultClient,
 	}
 	deployEnv := os.Getenv("DEPLOY_ENV")

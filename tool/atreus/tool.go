@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	toolDoc = "https://github.com/bilibili/atreus/blob/master/doc/wiki-cn/atreus-tool.md"
+	toolDoc = "https://github.com/mapgoo-lab/atreus/blob/master/doc/wiki-cn/atreus-tool.md"
 )
 
 func toolAction(c *cli.Context) (err error) {

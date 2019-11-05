@@ -23,8 +23,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/bilibili/atreus/pkg/cache"
-	"github.com/bilibili/atreus/pkg/sync/errgroup"
+	"github.com/mapgoo-lab/atreus/pkg/cache"
+	"github.com/mapgoo-lab/atreus/pkg/sync/errgroup"
 )
 
 var (

@@ -3,7 +3,7 @@ package testdata
 import (
 	"context"
 
-	"github.com/bilibili/atreus/pkg/sync/pipeline/fanout"
+	"github.com/mapgoo-lab/atreus/pkg/sync/pipeline/fanout"
 )
 
 // Demo test struct

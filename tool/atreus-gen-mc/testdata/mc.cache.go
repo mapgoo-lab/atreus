@@ -46,8 +46,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bilibili/atreus/pkg/cache/memcache"
-	"github.com/bilibili/atreus/pkg/log"
+	"github.com/mapgoo-lab/atreus/pkg/cache/memcache"
+	"github.com/mapgoo-lab/atreus/pkg/log"
 )
 
 var (

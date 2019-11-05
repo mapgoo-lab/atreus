@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/bilibili/atreus/tool/protobuf/pkg/extensions/gogoproto"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/tag"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/typemap"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/extensions/gogoproto"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/tag"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/typemap"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 )

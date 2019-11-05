@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bilibili/atreus/pkg/cache/memcache"
-	"github.com/bilibili/atreus/pkg/container/pool"
-	xtime "github.com/bilibili/atreus/pkg/time"
+	"github.com/mapgoo-lab/atreus/pkg/cache/memcache"
+	"github.com/mapgoo-lab/atreus/pkg/container/pool"
+	xtime "github.com/mapgoo-lab/atreus/pkg/time"
 )
 
 // Dao .

@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bilibili/atreus/tool/protobuf/pkg/generator"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/naming"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/generator"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/naming"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
@@ -94,7 +94,7 @@ func (t *ecode) generateFileHeader(file *descriptor.FileDescriptorProto, pkgName
 
 func (t *ecode) generateImports(file *descriptor.FileDescriptorProto) {
 	t.P(`import (`)
-	t.P(`	"github.com/bilibili/atreus/pkg/ecode"`)
+	t.P(`	"github.com/mapgoo-lab/atreus/pkg/ecode"`)
 	t.P(`)`)
 	t.P()
 	t.P(`// to suppressed 'imported but not used warning'`)

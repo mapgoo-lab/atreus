@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bilibili/atreus/tool/protobuf/pkg/gen"
-	"github.com/bilibili/atreus/tool/protobuf/pkg/generator"
-	ecodegen "github.com/bilibili/atreus/tool/protobuf/protoc-gen-ecode/generator"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/gen"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/generator"
+	ecodegen "github.com/mapgoo-lab/atreus/tool/protobuf/protoc-gen-ecode/generator"
 )
 
 func main() {

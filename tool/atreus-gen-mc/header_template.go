@@ -19,9 +19,9 @@ import (
 	{{if .UseStrConv}}"strconv"{{end}}
 	{{if .EnableBatch }}"sync"{{end}}
 NEWLINE
-	{{if .UseMemcached }}"github.com/bilibili/atreus/pkg/cache/memcache"{{end}}
-	{{if .EnableBatch }}"github.com/bilibili/atreus/pkg/sync/errgroup"{{end}}
-	"github.com/bilibili/atreus/pkg/log"
+	{{if .UseMemcached }}"github.com/mapgoo-lab/atreus/pkg/cache/memcache"{{end}}
+	{{if .EnableBatch }}"github.com/mapgoo-lab/atreus/pkg/sync/errgroup"{{end}}
+	"github.com/mapgoo-lab/atreus/pkg/log"
 	{{.ImportPackage}}
 )
 

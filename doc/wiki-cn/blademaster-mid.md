@@ -124,7 +124,7 @@ func Example() {
 ```go
 e := bm.DefaultServer(nil)
 // 挂载自适应限流中间件到 bm engine，使用默认配置
-csrf := bm.CSRF([]string{"bilibili.com"}, []string{"/a/api"})
+csrf := bm.CSRF([]string{"mapgoo-lab.com"}, []string{"/a/api"})
 e.Use(csrf)
 // 或者
 e.GET("/api", csrf, myHandler)

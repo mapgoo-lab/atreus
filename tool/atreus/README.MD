@@ -5,7 +5,7 @@ atreus 工具
 
 ## 安装
 
-`go get -u github.com/bilibili/atreus/tool/atreus`
+`go get -u github.com/mapgoo-lab/atreus/tool/atreus`
 
 ## 使用说明
 

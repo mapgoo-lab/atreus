@@ -73,24 +73,24 @@ func TestStripContentType(t *testing.T) {
 
 func TestBindInt8Form(t *testing.T) {
 	params := "state=1,2,3"
-	req, _ := http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ := http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q := new(Int8SliceStruct)
 	Form.Bind(req, q)
 	assert.EqualValues(t, []int8{1, 2, 3}, q.State)
 
 	params = "state=1,2,3,256"
-	req, _ = http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ = http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q = new(Int8SliceStruct)
 	assert.Error(t, Form.Bind(req, q))
 
 	params = "state="
-	req, _ = http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ = http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q = new(Int8SliceStruct)
 	assert.NoError(t, Form.Bind(req, q))
 	assert.Len(t, q.State, 0)
 
 	params = "state=1,,2"
-	req, _ = http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ = http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q = new(Int8SliceStruct)
 	assert.NoError(t, Form.Bind(req, q))
 	assert.EqualValues(t, []int8{1, 2}, q.State)
@@ -98,13 +98,13 @@ func TestBindInt8Form(t *testing.T) {
 
 func TestBindInt64Form(t *testing.T) {
 	params := "state=1,2,3"
-	req, _ := http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ := http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q := new(Int64SliceStruct)
 	Form.Bind(req, q)
 	assert.EqualValues(t, []int64{1, 2, 3}, q.State)
 
 	params = "state="
-	req, _ = http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ = http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q = new(Int64SliceStruct)
 	assert.NoError(t, Form.Bind(req, q))
 	assert.Len(t, q.State, 0)
@@ -112,19 +112,19 @@ func TestBindInt64Form(t *testing.T) {
 
 func TestBindStringForm(t *testing.T) {
 	params := "state=1,2,3"
-	req, _ := http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ := http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q := new(StringSliceStruct)
 	Form.Bind(req, q)
 	assert.EqualValues(t, []string{"1", "2", "3"}, q.State)
 
 	params = "state="
-	req, _ = http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ = http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q = new(StringSliceStruct)
 	assert.NoError(t, Form.Bind(req, q))
 	assert.Len(t, q.State, 0)
 
 	params = "state=p,,p"
-	req, _ = http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ = http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q = new(StringSliceStruct)
 	Form.Bind(req, q)
 	assert.EqualValues(t, []string{"p", "p"}, q.State)
@@ -237,7 +237,7 @@ func TestExistsSucceeds(t *testing.T) {
 
 func TestFormDefaultValue(t *testing.T) {
 	params := "int=333&string=hello&bool=true&int64_slice=5,6,7,8&int8_slice=5,6,7,8"
-	req, _ := http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ := http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q := new(ComplexDefaultStruct)
 	assert.NoError(t, Form.Bind(req, q))
 	assert.Equal(t, 333, q.Int)
@@ -247,7 +247,7 @@ func TestFormDefaultValue(t *testing.T) {
 	assert.EqualValues(t, []int8{5, 6, 7, 8}, q.Int8Slice)
 
 	params = "string=hello&bool=false"
-	req, _ = http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ = http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q = new(ComplexDefaultStruct)
 	assert.NoError(t, Form.Bind(req, q))
 	assert.Equal(t, 999, q.Int)
@@ -257,7 +257,7 @@ func TestFormDefaultValue(t *testing.T) {
 	assert.EqualValues(t, []int8{1, 2, 3, 4}, q.Int8Slice)
 
 	params = "strings=hello"
-	req, _ = http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ = http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q = new(ComplexDefaultStruct)
 	assert.NoError(t, Form.Bind(req, q))
 	assert.Equal(t, 999, q.Int)
@@ -267,7 +267,7 @@ func TestFormDefaultValue(t *testing.T) {
 	assert.EqualValues(t, []int8{1, 2, 3, 4}, q.Int8Slice)
 
 	params = "int=&string=&bool=true&int64_slice=&int8_slice="
-	req, _ = http.NewRequest("GET", "http://api.bilibili.com/test?"+params, nil)
+	req, _ = http.NewRequest("GET", "http://api.mapgoo-lab.com/test?"+params, nil)
 	q = new(ComplexDefaultStruct)
 	assert.NoError(t, Form.Bind(req, q))
 	assert.Equal(t, 999, q.Int)
