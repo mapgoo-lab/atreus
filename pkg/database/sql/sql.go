@@ -153,7 +153,7 @@ func Open(c *Config) (*DB, error) {
 }
 
 func connect(c *Config, dataSourceName string) (*sql.DB, error) {
-	d, err := sql.Open("mysql", dataSourceName)
+	d, err := sql.Open(c.DriverName, dataSourceName)
 	if err != nil {
 		err = errors.WithStack(err)
 		return nil, err
