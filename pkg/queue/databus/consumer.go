@@ -1,6 +1,7 @@
 package databus
 
 import (
+	"os"
 	"fmt"
 	"time"
 	"errors"
@@ -66,6 +67,8 @@ func NewConsumer(param ConsumerParam) (ConsumerEvent, error) {
 	//消费组内的消费者消费的算法（BalanceStrategySticky、BalanceStrategyRange、BalanceStrategyRoundRobin）
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin;
 
+	config.ClientID = fmt.Sprintf("Consumer-%d", os.Getpid())
+	
     //设置使用的kafka版本,如果低于V0_10_0_0版本,消息中的timestrap没有作用.需要消费和生产同时配置
     //注意，版本设置不对的话，kafka会返回很奇怪的错误，并且无法成功发送消息
     version, err := sarama.ParseKafkaVersion(param.KafkaVer)
