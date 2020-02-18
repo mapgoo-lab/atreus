@@ -13,7 +13,6 @@ import (
 	"github.com/mapgoo-lab/atreus/pkg/conf/dsn"
 	"github.com/mapgoo-lab/atreus/pkg/log"
 	nmd "github.com/mapgoo-lab/atreus/pkg/net/metadata"
-	"github.com/mapgoo-lab/atreus/pkg/net/rpc/warden/ratelimiter"
 	"github.com/mapgoo-lab/atreus/pkg/net/trace"
 	xtime "github.com/mapgoo-lab/atreus/pkg/time"
 
@@ -188,7 +187,7 @@ func NewServer(conf *ServerConfig, opt ...grpc.ServerOption) (s *Server) {
 	opt = append(opt, keepParam, grpc.UnaryInterceptor(s.interceptor))
 	s.server = grpc.NewServer(opt...)
 	s.Use(s.recovery(), s.handle(), serverLogging(conf.LogFlag), s.stats(), s.validate())
-	s.Use(ratelimiter.New(nil).Limit())
+	//s.Use(ratelimiter.New(nil).Limit())
 	return
 }
 
