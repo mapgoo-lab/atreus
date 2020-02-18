@@ -1,12 +1,12 @@
 package databus
 
 import (
-	"os"
-	"fmt"
-	"time"
-	"errors"
 	"context"
+	"fmt"
 	"github.com/Shopify/sarama"
+	"os"
+	"time"
+	"github.com/mapgoo-lab/atreus/pkg/log"
 )
 
 //使用者必须实现的接口
@@ -73,14 +73,14 @@ func NewConsumer(param ConsumerParam) (ConsumerEvent, error) {
     //注意，版本设置不对的话，kafka会返回很奇怪的错误，并且无法成功发送消息
     version, err := sarama.ParseKafkaVersion(param.KafkaVer)
 	if err != nil {
-		fmt.Println("Error parsing Kafka version: %v", err)
+		log.Error("Error parsing Kafka version: %v", err)
 		return nil, err
 	}
 	config.Version = version
 
     consumer, err := sarama.NewConsumerGroup(param.Address, param.GroupId, config)
     if err != nil {
-        fmt.Println(err)
+		log.Error("Error sarama.NewConsumerGroup: %v", err)
         return nil, err
 	}
 
@@ -99,13 +99,14 @@ func (handle *consumerEvent) Start() error {
 	for {
 		handler := consumerGroupHandler{handle}
 		if err := handle.consumer.Consume(ctx, topics, handler); err != nil {
-			fmt.Printf("Error from consumer: %v", err)
-			return errors.New("Error from consumer.")
+			log.Error("Error from consumer: %v", err)
+			return err
 		}
 	}
 }
 
 func (handle *consumerEvent) Close() {
+	log.Info("Close consumer")
 	handle.consumer.Close()
 }
 
@@ -123,8 +124,10 @@ func (handle consumerGroupHandler) Cleanup(sess sarama.ConsumerGroupSession) err
 }
 func (handle consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
-		fmt.Printf("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
-		handle.event.deal.DealMessage(msg.Value)
+		err := handle.event.deal.DealMessage(msg.Value)
+		if err != nil {
+			log.Info("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
+		}
 		sess.MarkMessage(msg, "")
 	}
 	return nil
