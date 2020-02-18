@@ -90,8 +90,9 @@ func (handle *producerEvent) SendMessage(data []byte, key string) error {
 
 	if handle.isack == true {
 		select {
-		case suc := <-handle.producer.Successes():
+		//case suc := <-handle.producer.Successes():
 			//log.Info("offset: ", suc.Offset, "timestamp: ", suc.Timestamp.String(), "partitions: ", suc.Partition)
+		case <-handle.producer.Successes():
 			return nil
 		case fail := <-handle.producer.Errors():
 			log.Error("SendMessage fail: %v", fail.Err)
