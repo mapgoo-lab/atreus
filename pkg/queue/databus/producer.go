@@ -1,10 +1,10 @@
 package databus
 
 import (
-	"fmt"
 	"time"
 	"errors"
 	"github.com/Shopify/sarama"
+	"github.com/mapgoo-lab/atreus/pkg/log"
 )
 
 type ProducerEvent interface {
@@ -58,14 +58,14 @@ func NewAsyncProducer(param ProducerParam) (ProducerEvent, error) {
     //注意，版本设置不对的话，kafka会返回很奇怪的错误，并且无法成功发送消息
     version, err := sarama.ParseKafkaVersion(param.KafkaVer)
 	if err != nil {
-		fmt.Println("Error parsing Kafka version: %v", err)
+		log.Error("Error parsing Kafka version: %v", err)
 		return nil, err
 	}
 	config.Version = version
 
     producer, err := sarama.NewAsyncProducer(param.Address, config)
     if err != nil {
-        fmt.Println(err)
+		log.Error("Error sarama.NewAsyncProducer: %v", err)
         return nil, err
 	}
 
@@ -91,13 +91,13 @@ func (handle *producerEvent) SendMessage(data []byte, key string) error {
 	if handle.isack == true {
 		select {
 		case suc := <-handle.producer.Successes():
-			fmt.Println("offset: ", suc.Offset, "timestamp: ", suc.Timestamp.String(), "partitions: ", suc.Partition)
+			//log.Info("offset: ", suc.Offset, "timestamp: ", suc.Timestamp.String(), "partitions: ", suc.Partition)
 			return nil
 		case fail := <-handle.producer.Errors():
-			fmt.Println("err: ", fail.Err)
+			log.Error("SendMessage fail: %v", fail.Err)
 			return fail.Err
-		case timeout := <-time.After(time.Second*10): 
-			fmt.Println("ack msg error %p.", timeout)
+		case timeout := <-time.After(time.Second*10):
+			log.Error("ack msg error %p.", timeout)
 			return errors.New("ack msg timeout.")
 		}
 	}
@@ -106,5 +106,6 @@ func (handle *producerEvent) SendMessage(data []byte, key string) error {
 }
 
 func (handle *producerEvent) Close() {
+	log.Info("Close producer")
 	handle.producer.AsyncClose()
 }
