@@ -100,7 +100,8 @@ func (handle *consumerEvent) Start() error {
 		handler := consumerGroupHandler{handle}
 		if err := handle.consumer.Consume(ctx, topics, handler); err != nil {
 			log.Error("Error from consumer: %v", err)
-			return err
+			//return err
+			time.Sleep(time.Second * 1)
 		}
 	}
 }
