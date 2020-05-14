@@ -3,6 +3,7 @@ package databus
 import (
 	"time"
 	"errors"
+	"strconv"
 	"github.com/Shopify/sarama"
 	"github.com/mapgoo-lab/atreus/pkg/log"
 )
@@ -15,11 +16,27 @@ type ProducerEvent interface {
 	Close()
 }
 
+const (
+	//返回一个手动选择分区的分割器,也就是获取msg中指定的`partition`
+    KafkaManual uint32 = 1
+	
+	//通过随机函数随机获取一个分区号
+    KafkaRandom uint32 = 2
+	
+	//环形选择,也就是在所有分区中循环选择一个
+    KafkaRoundRobin uint32 = 3
+	
+	//通过msg中的key生成hash值,选择分区
+    KafkaHash uint32 = 4
+)
+
 type producerEvent struct {
 	address []string
 	topic string
 	isack bool
 	producer sarama.AsyncProducer
+	partlen int
+	partitioner uint32
 }
 
 type ProducerParam struct {
@@ -27,6 +44,7 @@ type ProducerParam struct {
 	Topic string
 	IsAck bool
 	KafkaVer string
+	Partitioner uint32
 }
 
 func NewAsyncProducer(param ProducerParam) (ProducerEvent, error) {
@@ -39,8 +57,17 @@ func NewAsyncProducer(param ProducerParam) (ProducerEvent, error) {
     //等待服务器所有副本都保存成功后的响应
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	
-    //通过msg中的key生成hash值,选择分区
-	config.Producer.Partitioner = sarama.NewHashPartitioner
+	//分区选择算法
+	if param.Partitioner == KafkaManual {
+		config.Producer.Partitioner = sarama.NewManualPartitioner
+	} else if param.Partitioner == KafkaRandom {
+		config.Producer.Partitioner = sarama.NewRandomPartitioner
+	} else if param.Partitioner == KafkaRandom {
+		config.Producer.Partitioner = sarama.NewRoundRobinPartitioner
+	} else {
+		config.Producer.Partitioner = sarama.NewHashPartitioner
+	}
+    
 	
     //是否等待成功和失败后的响应,只有上面的RequireAcks设置不是NoReponse这里才有用.
     if param.IsAck == true {
@@ -63,6 +90,20 @@ func NewAsyncProducer(param ProducerParam) (ProducerEvent, error) {
 	}
 	config.Version = version
 
+	client, err := sarama.NewClient(param.Address, config)
+	if err != nil {
+		log.Error("Error sarama.NewClient: %v", err)
+        return nil, err
+	}
+	
+	partitions, err := client.Partitions(param.Topic)
+	if err != nil {
+		log.Error("Error client.Partitions: %v", err)
+        return nil, err
+	}
+	partlen := len(partitions)
+	client.Close()
+	
     producer, err := sarama.NewAsyncProducer(param.Address, config)
     if err != nil {
 		log.Error("Error sarama.NewAsyncProducer: %v", err)
@@ -74,15 +115,28 @@ func NewAsyncProducer(param ProducerParam) (ProducerEvent, error) {
 		topic: param.Topic,
 		isack: param.IsAck,
 		producer: producer,
+		partlen: partlen,
+		partitioner: param.Partitioner,
 	}, nil
 }
 
 func (handle *producerEvent) SendMessage(data []byte, key string) error {
+	var partindex int32
+	partindex = 0
+	if handle.partitioner == KafkaManual {
+		index, err := strconv.Atoi(key)
+		if err != nil {
+			index = 0
+		}
+		partindex = int32(index % handle.partlen)
+	}
+	
 	// 注意：这里的msg必须得是新构建的变量，不然你会发现发送过去的消息内容都是一样的，因为批次发送消息的关系。
 	msg := &sarama.ProducerMessage{
 		Topic: handle.topic,
 		Key:sarama.ByteEncoder(key),
 		Value:sarama.ByteEncoder(data),
+		Partition:partindex,
 	}
 
 	//使用通道发送
