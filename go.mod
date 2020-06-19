@@ -46,3 +46,5 @@ require (
 	modernc.org/strutil v1.1.0 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
+
+replace github.com/coreos/bbolt => go.etcd.io/bbolt v1.3.5
