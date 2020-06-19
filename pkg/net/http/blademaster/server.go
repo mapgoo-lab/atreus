@@ -33,6 +33,7 @@ var (
 	_httpDSN       string
 	default405Body = []byte("405 method not allowed")
 	default404Body = []byte("404 page not found")
+	defaultSimpleJson = false
 )
 
 func init() {
@@ -56,6 +57,7 @@ func parseDSN(rawdsn string) *ServerConfig {
 	if _, err = d.Bind(conf); err != nil {
 		panic(errors.Wrapf(err, "blademaster: invalid dsn: %s", rawdsn))
 	}
+
 	return conf
 }
 
@@ -79,6 +81,7 @@ type ServerConfig struct {
 	Timeout      xtime.Duration `dsn:"query.timeout"`
 	ReadTimeout  xtime.Duration `dsn:"query.readTimeout"`
 	WriteTimeout xtime.Duration `dsn:"query.writeTimeout"`
+	UseSimpleJson bool		`dsn:"query.useSimpleJson"`
 }
 
 // MethodConfig is

@@ -176,6 +176,7 @@ func (c *Context) JSON(data interface{}, err error) {
 		Code:    bcode.Code(),
 		Message: bcode.Message(),
 		Data:    data,
+		IsSimple: c.engine.conf.UseSimpleJson,
 	})
 }
 
