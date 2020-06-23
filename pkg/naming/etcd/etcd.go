@@ -12,10 +12,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/mapgoo-lab/atreus/pkg/log"
 	"github.com/mapgoo-lab/atreus/pkg/naming"
 	"go.etcd.io/etcd/clientv3"
-	"go.etcd.io/etcd/mvcc/mvccpb"
 	"google.golang.org/grpc"
 )
 
