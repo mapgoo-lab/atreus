@@ -20,7 +20,7 @@ func Trace() HandlerFunc {
 		t, err := trace.Extract(trace.HTTPFormat, c.Request.Header)
 		if err != nil {
 			var opts []trace.Option
-			if ok, _ := strconv.ParseBool(trace.AtreusTraceDebug); ok {
+			if ok, _ := strconv.ParseBool(c.Request.Header.Get(trace.AtreusTraceDebug)); ok {
 				opts = append(opts, trace.EnableDebug())
 			}
 			t = trace.New(c.Request.URL.Path, opts...)
