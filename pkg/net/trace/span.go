@@ -2,9 +2,10 @@ package trace
 
 import (
 	"fmt"
-	"time"
-
 	protogen "github.com/mapgoo-lab/atreus/pkg/net/trace/proto"
+	"strconv"
+	"strings"
+	"time"
 )
 
 const (
@@ -138,4 +139,13 @@ func (s *Span) SetTitle(operationName string) {
 
 func (s *Span) String() string {
 	return s.context.String()
+}
+
+//重置TraceID信息
+func(s *Span) ResetTraceInfo(traceID string){
+	tids := strings.Split(traceID, ":")
+	if len(tids) == 4 {
+		s.context.TraceID, _ = strconv.ParseUint(tids[0], 16, 64)
+		s.context.ParentID, _ = strconv.ParseUint(tids[1], 16, 64)
+	}
 }

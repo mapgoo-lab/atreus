@@ -4,15 +4,19 @@ import (
 	"context"
 	"fmt"
 	"github.com/Shopify/sarama"
+	"github.com/mapgoo-lab/atreus/pkg/conf/env"
+	"github.com/mapgoo-lab/atreus/pkg/log"
+	"github.com/mapgoo-lab/atreus/pkg/net/criticality"
+	"github.com/mapgoo-lab/atreus/pkg/net/metadata"
+	"github.com/mapgoo-lab/atreus/pkg/net/trace"
 	"os"
 	"time"
-	"github.com/mapgoo-lab/atreus/pkg/log"
 )
 
 //使用者必须实现的接口
 type ConsumerDeal interface {
 	//数据处理的实现
-	DealMessage(data []byte) error
+	DealMessage(data []byte,ctx context.Context) error
 
 	//消费组增加消费者的消息通知
 	Setup(topicAndPartitions map[string][]int32, memberId string, generationId int32)
@@ -125,11 +129,26 @@ func (handle consumerGroupHandler) Cleanup(sess sarama.ConsumerGroupSession) err
 }
 func (handle consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
-		err := handle.event.deal.DealMessage(msg.Value)
+		var ctx,tre= getTraceContextTrace()
+		err := handle.event.deal.DealMessage(msg.Value,ctx)
 		if err != nil {
 			log.Info("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
 		}
+		tre.Finish(nil)
 		sess.MarkMessage(msg, "")
 	}
 	return nil
+}
+
+func getTraceContextTrace() (ctx context.Context,tre trace.Trace) {
+	md := metadata.MD{
+		metadata.RemoteIP:    env.Hostname,
+		metadata.Criticality: string(criticality.Critical),
+		metadata.Caller:    env.AppID,
+	}
+
+	tre = trace.New(fmt.Sprintf("/%s.Consumer",env.AppID))
+	ctx1 := metadata.NewContext(context.Background(), md)
+	ctx= trace.NewContext(ctx1, tre)
+	return
 }
