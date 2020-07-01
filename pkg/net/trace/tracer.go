@@ -91,4 +91,7 @@ type Trace interface {
 
 	// SetTitle reset trace title
 	SetTitle(title string)
+
+	//重置TraceID信息
+	ResetTraceInfo(traceID string)
 }

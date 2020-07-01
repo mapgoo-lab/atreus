@@ -45,3 +45,6 @@ func (n noopspan) Visit(func(k, v string)) {}
 func (n noopspan) SetTitle(string) {}
 
 func (n noopspan) String() string { return "" }
+
+//重置TraceID信息
+func (n noopspan)  ResetTraceInfo(traceID string){}

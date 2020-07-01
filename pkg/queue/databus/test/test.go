@@ -11,7 +11,7 @@ import (
 
 type ConsumerDealHandle struct {}
 
-func (handle ConsumerDealHandle) DealMessage(data []byte) error {
+func (handle ConsumerDealHandle) DealMessage(data []byte,ctx context.Context) error {
 	//解包proto
 	var req *pb.EventReq = new(pb.EventReq)
 	err := proto.Unmarshal(data, req)
