@@ -166,7 +166,7 @@ func (handle consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession
 				}
 				sess.MarkMessage(msg, "")
 			}
-		case <-sess.Context().Done():
+//		case <-sess.Context().Done():
 //			log.Error("Context is Done")
 		}
 
