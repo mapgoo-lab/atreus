@@ -166,10 +166,10 @@ func (handle consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession
 				}
 				sess.MarkMessage(msg, "")
 			}else {
-				log.Error("Message is nil(topic:%s,partition:%d,offset:%d)", msg.Topic, msg.Partition, msg.Offset)
+				log.Error("Message is nil(topic:%s,address:%v,groupid:%d)", handle.event.topic, handle.event.address, handle.event.groupid)
 			}
 		case <-sess.Context().Done():
-			log.Error("Context is Done")
+//			log.Error("Context is Done")
 		}
 
 		if handle.event.isclose == true {
