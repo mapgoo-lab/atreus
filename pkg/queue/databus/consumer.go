@@ -39,6 +39,7 @@ type consumerEvent struct {
 	config *sarama.Config
 	isclose bool
 	wg *sync.WaitGroup
+	consumer sarama.ConsumerGroup
 }
 
 type ConsumerParam struct {
@@ -75,6 +76,19 @@ func NewConsumer(param ConsumerParam) (ConsumerEvent, error) {
 
 	config.Version = version
 
+	consumer, err := sarama.NewConsumerGroup(param.Address, param.GroupId, config)
+	if err != nil {
+		log.Error("call NewConsumerGroup failed(topic:%s,err:%v).", param.Topic, err)
+		return nil, err
+	}
+
+	go func() {
+		for err := range consumer.Errors() {
+			log.Error("check consumer error(topic:%s,err:%v).", param.Topic, err)
+		}
+		log.Error("check consumer error exit(topic:%s).", param.Topic)
+	}()
+
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	return &consumerEvent {
@@ -84,52 +98,33 @@ func NewConsumer(param ConsumerParam) (ConsumerEvent, error) {
 		config: config,
 		isclose: false,
 		dealhanle: param.Dealhanle,
+		consumer: consumer,
 		wg: wg,
 	}, nil
 }
 
 func (handle *consumerEvent) Start() error {
-	for handle.isclose == false {
-		ctx := context.Background()
-		topics := []string{handle.topic};
+	ctx := context.Background()
+	topics := []string{handle.topic};
+	handler := consumerGroupHandler{handle}
 
-		consumer, err := sarama.NewConsumerGroup(handle.address, handle.groupid, handle.config)
+	for {
+		if handle.isclose == true {
+			break
+		}
+
+		err := handle.consumer.Consume(ctx, topics, handler)
 		if err != nil {
-			log.Error("call NewConsumerGroup failed(topic:%s,err:%v).", handle.topic, err)
+			log.Error("consumer failed(topic:%s,err:%v).", handle.topic, err)
+		}
+
+		if ctx.Err() != nil {
 			time.Sleep(time.Duration(1)*time.Second)
-			continue
+			ctx = context.Background()
+			log.Error("create new ctx(topic:%s).", handle.topic)
 		}
-
-		go func() {
-			for err := range consumer.Errors() {
-				log.Error("check consumer error(topic:%s,err:%v).", handle.topic, err)
-			}
-			log.Error("check consumer error exit(topic:%s).", handle.topic)
-		}()
-
-		retry := 5
-		for {
-			if handle.isclose == true {
-				break
-			}
-
-			handler := consumerGroupHandler{handle}
-			err := consumer.Consume(ctx, topics, handler)
-			if err != nil {
-				log.Error("consumer failed(topic:%s,err:%v).", handle.topic, err)
-				retry--
-				if retry == 0 {
-					break
-				}
-				time.Sleep(time.Duration(1)*time.Second)
-			} else {
-				retry = 5
-			}
-		}
-
-		log.Info("consumer is begin closed(topic:%s).", handle.topic)
-		consumer.Close()
 	}
+
 	handle.wg.Done()
 	log.Info("consumerEvent start is exit(topic:%s).", handle.topic)
 	
@@ -140,6 +135,7 @@ func (handle *consumerEvent) Close() {
 	handle.isclose = true
 	log.Info("wait consumerEvent is close(topic:%s).", handle.topic)
 	handle.wg.Wait()
+	handle.consumer.Close()
 	log.Info("consumerEvent is closed(topic:%s).", handle.topic)
 }
 
@@ -156,24 +152,12 @@ func (handle consumerGroupHandler) Cleanup(sess sarama.ConsumerGroupSession) err
 	return nil
 }
 func (handle consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	for {
-		select {
-		case msg := <-claim.Messages():
-			if msg != nil {
-				err := handle.event.dealhanle.DealMessage(msg.Value, msg.Topic, msg.Partition, msg.Offset, handle.event.groupid)
-				if err != nil {
-					log.Error("Message failed(topic:%s,partition:%d,offset:%d,err:%v)", msg.Topic, msg.Partition, msg.Offset, err)
-				}
-				sess.MarkMessage(msg, "")
-			}
-//		case <-sess.Context().Done():
-//			log.Error("Context is Done")
+	for msg := range claim.Messages() {
+		err := handle.event.dealhanle.DealMessage(msg.Value, msg.Topic, msg.Partition, msg.Offset, handle.event.groupid)
+		if err != nil {
+			log.Error("Message failed(topic:%s,partition:%d,offset:%d,err:%v)", msg.Topic, msg.Partition, msg.Offset, err)
 		}
-
-		if handle.event.isclose == true {
-			log.Info("consumerGroupHandler is exit.")
-			return errors.New("程序退出！")
-		}
+		sess.MarkMessage(msg, "")
 	}
 
 	return nil
