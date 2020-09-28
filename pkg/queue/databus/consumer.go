@@ -7,7 +7,6 @@ import (
 	"os"
 	"sync"
 	"time"
-	"errors"
 	"github.com/mapgoo-lab/atreus/pkg/log"
 )
 
