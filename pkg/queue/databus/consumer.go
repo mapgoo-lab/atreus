@@ -84,9 +84,9 @@ func NewConsumer(param ConsumerParam) (ConsumerEvent, error) {
 
 	go func() {
 		for err := range consumer.Errors() {
-			log.Error("check consumer error(topic:%s,err:%v).", param.Topic, err)
+			log.Error("consumer error(topic:%s,err:%v).", param.Topic, err)
 		}
-		log.Error("check consumer error exit(topic:%s).", param.Topic)
+		log.Error("consumer error exit(topic:%s).", param.Topic)
 	}()
 
 	wg := new(sync.WaitGroup)
