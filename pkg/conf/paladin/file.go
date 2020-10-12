@@ -179,7 +179,7 @@ func loadValues(base string) (map[string]*Value, error) {
 	}
 	values := make(map[string]*Value, 0)
 	for _, fpath := range paths {
-		if value, errLoad := loadValue(fpath); errLoad != nil {
+		if value, errLoad := loadValue(fpath); errLoad == nil {
 			values[path.Base(fpath)] = value
 		}
 	}
@@ -187,7 +187,7 @@ func loadValues(base string) (map[string]*Value, error) {
 	if len(values) == 0 {
 		return nil, fmt.Errorf("loadValue from %s all failed", base)
 	}
-	
+
 	return values, nil
 }
 
