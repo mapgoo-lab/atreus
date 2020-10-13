@@ -43,6 +43,8 @@ var (
 	Color string
 	// DiscoveryNodes is seed nodes.
 	DiscoveryNodes string
+	// Application RUN in the container flag
+	RunContainer string
 )
 
 func init() {
@@ -65,6 +67,7 @@ func addFlag(fs *flag.FlagSet) {
 	fs.StringVar(&DeployEnv, "deploy.env", defaultString("DEPLOY_ENV", _deployEnv), "deploy env. or use DEPLOY_ENV env variable, value: dev/fat1/uat/pre/prod etc.")
 	fs.StringVar(&Color, "deploy.color", os.Getenv("DEPLOY_COLOR"), "deploy.color is the identification of different experimental group.")
 	fs.StringVar(&DiscoveryNodes, "discovery.nodes", os.Getenv("DISCOVERY_NODES"), "discovery.nodes is seed nodes. value: 127.0.0.1:7171,127.0.0.2:7171 etc.")
+	fs.StringVar(&RunContainer, "run.container", os.Getenv("RUN_CONTAINER"), "RunContainer is a flag that application run in a container. value: true or 1 etc.")
 }
 
 func defaultString(env, value string) string {

@@ -19,6 +19,8 @@ import (
 	"github.com/mapgoo-lab/atreus/pkg/net/ip"
 	"github.com/mapgoo-lab/atreus/pkg/net/metadata"
 	xtime "github.com/mapgoo-lab/atreus/pkg/time"
+	"github.com/mapgoo-lab/atreus/pkg/conf/env"
+	"github.com/mapgoo-lab/atreus/pkg/naming"
 
 	"github.com/pkg/errors"
 )
@@ -114,6 +116,43 @@ func (engine *Engine) Start() error {
 	}()
 
 	return nil
+}
+
+func (engine *Engine) Register(registry naming.Registry) (error) {
+	appid := env.AppID
+	zone := env.Zone
+	RunContainer := env.RunContainer
+	hostname := fmt.Sprintf("http-%s-%s-%d-%d", appid, env.Hostname, time.Now().Unix(), os.Getpid())
+
+	host := ""
+	if RunContainer == "true" || RunContainer == "1" {
+		host = ip.InternalIP()
+	} else {
+		host = env.Hostname
+	}
+
+	if len(host) == 0 {
+		return fmt.Errorf("There is not a valid interface to register")
+	}
+
+	addr := engine.conf.Addr
+
+	kv := strings.Split(addr, ":")
+	if len(kv) != 2 {
+		return fmt.Errorf("bad addr config")
+	}
+
+	addrs := make([]string, 1)
+	addrs = append(addrs, fmt.Sprintf("grpc://%s:%s", host, kv[1]))
+
+	_, err := registry.Register(context.Background(), &naming.Instance{
+		AppID:    appid,
+		Hostname: hostname,
+		Zone:     zone,
+		Addrs:    addrs,
+	})
+
+	return err
 }
 
 // Engine is the framework's instance, it contains the muxer, middleware and configuration settings.
@@ -337,13 +376,6 @@ func (engine *Engine) SetConfig(conf *ServerConfig) (err error) {
 	}
 	engine.lock.Lock()
 	engine.conf = conf
-	engine.lock.Unlock()
-	return
-}
-
-func (engine *Engine) GetConfig() (conf *ServerConfig) {
-	engine.lock.Lock()
-	conf = engine.conf
 	engine.lock.Unlock()
 	return
 }

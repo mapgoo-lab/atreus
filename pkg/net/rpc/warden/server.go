@@ -7,6 +7,7 @@ import (
 	"math"
 	"net"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -19,6 +20,9 @@ import (
 	//this package is for json format response
 	_ "github.com/mapgoo-lab/atreus/pkg/net/rpc/warden/internal/encoding/json"
 	"github.com/mapgoo-lab/atreus/pkg/net/rpc/warden/internal/status"
+	"github.com/mapgoo-lab/atreus/pkg/conf/env"
+	"github.com/mapgoo-lab/atreus/pkg/net/ip"
+	"github.com/mapgoo-lab/atreus/pkg/naming"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -226,13 +230,6 @@ func (s *Server) SetConfig(conf *ServerConfig) (err error) {
 	return nil
 }
 
-func (s *Server) GetConfig() (conf *ServerConfig) {
-	s.mutex.Lock()
-	conf = s.conf
-	s.mutex.Unlock()
-	return
-}
-
 // interceptor is a single interceptor out of a chain of many interceptors.
 // Execution is done in left-to-right order, including passing of context.
 // For example ChainUnaryServer(one, two, three) will execute one before two before three, and three
@@ -325,6 +322,43 @@ func (s *Server) StartWithAddr() (*Server, net.Addr, error) {
 		return nil, nil, err
 	}
 	return s, addr, nil
+}
+
+func (s *Server) Register(registry naming.Registry) (error) {
+	appid := env.AppID
+	zone := env.Zone
+	RunContainer := env.RunContainer
+	hostname := fmt.Sprintf("grpc-%s-%s-%d-%d", appid, env.Hostname, time.Now().Unix(), os.Getpid())
+
+	host := ""
+	if RunContainer == "true" || RunContainer == "1" {
+		host = ip.InternalIP()
+	} else {
+		host = env.Hostname
+	}
+
+	if len(host) == 0 {
+		return fmt.Errorf("There is not a valid interface to register")
+	}
+
+	addr := s.conf.Addr
+
+	kv := strings.Split(addr, ":")
+	if len(kv) != 2 {
+		return fmt.Errorf("bad addr config")
+	}
+
+	addrs := make([]string, 1)
+	addrs = append(addrs, fmt.Sprintf("http://%s:%s", host, kv[1]))
+
+	_, err := registry.Register(context.Background(), &naming.Instance{
+		AppID:    appid,
+		Hostname: hostname,
+		Zone:     zone,
+		Addrs:    addrs,
+	})
+
+	return err
 }
 
 func (s *Server) startWithAddr() (net.Addr, error) {
