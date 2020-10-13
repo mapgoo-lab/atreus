@@ -118,7 +118,7 @@ func (engine *Engine) Start() error {
 	return nil
 }
 
-func (engine *Engine) Register(registry naming.Registry) (error) {
+func (engine *Engine) ServiceRegister(registry naming.Registry) (error) {
 	appid := env.AppID
 	zone := env.Zone
 	RunContainer := env.RunContainer

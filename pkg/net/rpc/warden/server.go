@@ -324,7 +324,7 @@ func (s *Server) StartWithAddr() (*Server, net.Addr, error) {
 	return s, addr, nil
 }
 
-func (s *Server) Register(registry naming.Registry) (error) {
+func (s *Server) ServiceRegister(registry naming.Registry) (error) {
 	appid := env.AppID
 	zone := env.Zone
 	RunContainer := env.RunContainer
