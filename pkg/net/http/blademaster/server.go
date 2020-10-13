@@ -341,6 +341,13 @@ func (engine *Engine) SetConfig(conf *ServerConfig) (err error) {
 	return
 }
 
+func (engine *Engine) GetConfig() (conf *ServerConfig) {
+	engine.lock.Lock()
+	conf = engine.conf
+	engine.lock.Unlock()
+	return
+}
+
 func (engine *Engine) methodConfig(path string) *MethodConfig {
 	engine.pcLock.RLock()
 	mc := engine.methodConfigs[path]

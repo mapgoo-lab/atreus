@@ -226,6 +226,13 @@ func (s *Server) SetConfig(conf *ServerConfig) (err error) {
 	return nil
 }
 
+func (s *Server) GetConfig() (conf *ServerConfig) {
+	s.mutex.Lock()
+	conf = s.conf
+	s.mutex.Unlock()
+	return
+}
+
 // interceptor is a single interceptor out of a chain of many interceptors.
 // Execution is done in left-to-right order, including passing of context.
 // For example ChainUnaryServer(one, two, three) will execute one before two before three, and three
