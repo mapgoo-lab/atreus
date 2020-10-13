@@ -118,11 +118,11 @@ func (engine *Engine) Start() error {
 	return nil
 }
 
-func (engine *Engine) ServiceRegister(registry naming.Registry) (error) {
-	appid := env.AppID
+func (engine *Engine) ServiceRegister(registry naming.Registry, version string, Metadata map[string]string) (error) {
+	appid := fmt.Sprintf("http-%s", env.AppID)
 	zone := env.Zone
 	RunContainer := env.RunContainer
-	hostname := fmt.Sprintf("http-%s-%s-%d-%d", appid, env.Hostname, time.Now().Unix(), os.Getpid())
+	hostname := fmt.Sprintf("http-%s-%s-%d-%d", env.AppID, env.Hostname, time.Now().Unix(), os.Getpid())
 
 	host := ""
 	if RunContainer == "true" || RunContainer == "1" {
@@ -142,14 +142,19 @@ func (engine *Engine) ServiceRegister(registry naming.Registry) (error) {
 		return fmt.Errorf("bad addr config")
 	}
 
-	addrs := make([]string, 1)
-	addrs = append(addrs, fmt.Sprintf("grpc://%s:%s", host, kv[1]))
+	addrs := make([]string, 0)
+	addrs = append(addrs, fmt.Sprintf("http://%s:%s", host, kv[1]))
 
 	_, err := registry.Register(context.Background(), &naming.Instance{
+		Region:	  env.Region,
+		Zone:     zone,
+		Env:	  env.DeployEnv,
 		AppID:    appid,
 		Hostname: hostname,
-		Zone:     zone,
 		Addrs:    addrs,
+		Version:  version,
+		LastTs:   time.Now().Unix(),
+		Metadata: Metadata,
 	})
 
 	return err

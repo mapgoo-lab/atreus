@@ -324,7 +324,7 @@ func (s *Server) StartWithAddr() (*Server, net.Addr, error) {
 	return s, addr, nil
 }
 
-func (s *Server) ServiceRegister(registry naming.Registry) (error) {
+func (s *Server) ServiceRegister(registry naming.Registry, version string, Metadata map[string]string) (error) {
 	appid := env.AppID
 	zone := env.Zone
 	RunContainer := env.RunContainer
@@ -348,14 +348,19 @@ func (s *Server) ServiceRegister(registry naming.Registry) (error) {
 		return fmt.Errorf("bad addr config")
 	}
 
-	addrs := make([]string, 1)
-	addrs = append(addrs, fmt.Sprintf("http://%s:%s", host, kv[1]))
+	addrs := make([]string, 0)
+	addrs = append(addrs, fmt.Sprintf("grpc://%s:%s", host, kv[1]))
 
 	_, err := registry.Register(context.Background(), &naming.Instance{
+		Region:	  env.Region,
+		Zone:     zone,
+		Env:	  env.DeployEnv,
 		AppID:    appid,
 		Hostname: hostname,
-		Zone:     zone,
 		Addrs:    addrs,
+		Version:  version,
+		LastTs:   time.Now().Unix(),
+		Metadata: Metadata,
 	})
 
 	return err
