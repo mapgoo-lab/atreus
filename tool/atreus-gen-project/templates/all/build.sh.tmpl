@@ -14,11 +14,6 @@ docker_registry_passwd=Mapgoo-paas123
 build_interface() {
 
     cd $src_root/api
-    pb_path='.'
-
-    if [ $# == 2 ]; then
-        pb_path=$1
-    fi
 
     #编译http接口文件
     protoc --proto_path=$GOPATH/src \
@@ -26,7 +21,7 @@ build_interface() {
            --proto_path=/$src_root/api \
            --proto_path=$pb_path \
            --bm_out=explicit_http=true:. \
-           $pb_path/api.proto
+           api.proto
 
     #编译grpc接口文件
     protoc --proto_path=$GOPATH/src \
@@ -34,7 +29,7 @@ build_interface() {
            --proto_path=/$src_root/api \
            --proto_path=$pb_path \
            --gofast_out=plugins=grpc:. \
-           $pb_path/api.proto
+           api.proto
 }
 
 . public
