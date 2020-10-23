@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"os"
-	"sync"
 	"time"
 	"github.com/mapgoo-lab/atreus/pkg/log"
 )
@@ -37,7 +36,6 @@ type consumerEvent struct {
 	dealhanle ConsumerDeal
 	config *sarama.Config
 	isclose bool
-	wg *sync.WaitGroup
 	consumer sarama.ConsumerGroup
 }
 
@@ -88,8 +86,6 @@ func NewConsumer(param ConsumerParam) (ConsumerEvent, error) {
 		log.Error("consumer error exit(topic:%s).", param.Topic)
 	}()
 
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
 	return &consumerEvent {
 		address: param.Address,
 		groupid: param.GroupId,
@@ -98,7 +94,6 @@ func NewConsumer(param ConsumerParam) (ConsumerEvent, error) {
 		isclose: false,
 		dealhanle: param.Dealhanle,
 		consumer: consumer,
-		wg: wg,
 	}, nil
 }
 
@@ -124,7 +119,6 @@ func (handle *consumerEvent) Start() error {
 		}
 	}
 
-	handle.wg.Done()
 	log.Info("consumerEvent start is exit(topic:%s).", handle.topic)
 	
 	return nil
@@ -133,7 +127,6 @@ func (handle *consumerEvent) Start() error {
 func (handle *consumerEvent) Close() {
 	handle.isclose = true
 	log.Info("wait consumerEvent is close(topic:%s).", handle.topic)
-	handle.wg.Wait()
 	handle.consumer.Close()
 	log.Info("consumerEvent is closed(topic:%s).", handle.topic)
 }
