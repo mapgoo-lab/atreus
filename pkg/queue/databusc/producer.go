@@ -53,7 +53,7 @@ func NewAsyncProducer(param *ProducerParam) (ProducerEvent, error) {
 			case *kafka.Message:
 				m := ev
 				if m.TopicPartition.Error != nil {
-					log.Error("Delivery failed(err:%v,Key:%s).", m.TopicPartition.Error, string(e.Key))
+					log.Error("Delivery failed(err:%v,Key:%s).", m.TopicPartition.Error, string(m.Key))
 				}
 
 			default:
