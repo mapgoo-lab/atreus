@@ -1,0 +1,221 @@
+
+env_install() {
+    yum install -y epel-release
+    yum install -y snap
+    snap install --classic protobuf
+    go get -u github.com/mapgoo-lab/atreus/tool/protobuf/protoc-gen-bm
+    go get -u github.com/gogo/protobuf/protoc-gen-gofast
+    go get -u github.com/mapgoo-lab/atreus/tool/protobuf/protoc-gen-bswagger
+    go get -u github.com/go-swagger/go-swagger/cmd/swagger
+}
+
+print_help() {
+    echo "Usage: "
+    echo "  $0 help                                 ---Print the usage"
+    echo "  $0 run                                  ---Run the binary in the localhost"
+    echo "  $0 --env|-e=[dev|test|uat|prod]         ---Define the deploy env, default dev"
+    echo "  $0 --version|-v=version                 ---Define a version as the build target"
+    echo "  $0 --target|-t=[bin|image|interface]    ---Define the build target, support bin, image, interface"
+}
+
+version=
+build_target=
+deploy_env=dev
+run=
+help=
+
+build_public() {
+    build_interface
+
+    if [ $? -ne 0 ]; then
+        echo "Error: build interface failed"
+        exit 1
+    fi
+
+    cd $src_root
+    if [ ! -d "$src_root/dist" ]; then
+        mkdir -p $src_root/dist
+    fi
+
+    if [ -f "$src_root/dist/version.go" ]; then
+        rm -rf $src_root/dist/version.go
+    fi
+
+    touch $src_root/dist/version.go
+
+    DATE=$(date +"%Y-%m-%d %H:%M:%S")
+    echo "package dist" > $src_root/dist/version.go
+    echo "" >> $src_root/dist/version.go
+    echo "var (" >> $src_root/dist/version.go
+    echo "  Version string = \"$service_version\"" >> $src_root/dist/version.go
+    echo "  Build_date string = \"$DATE\"" >> $src_root/dist/version.go
+    echo ")" >> $src_root/dist/version.go
+}
+
+build_bin() {
+    service_version=$1
+
+    build_public $service_version
+
+    go build -o $app_id cmd/main.go
+}
+
+build_image() {
+    service_version=$1
+    deploy_env=$2
+
+    build_public $service_version
+
+    echo "登录镜像仓库"
+    docker login $docker_registry_host -u $docker_registry_user -p $docker_registry_passwd
+    if [ $? -ne 0 ]; then
+        echo "Error: 登录镜像仓库失败"
+        exit 1
+    fi
+
+    echo "开始编译镜像"
+    #编译镜像
+    docker build -t $app_id:v$service_version .
+
+    if [ $? -ne 0 ]; then
+        echo "Error: 镜像编译失败"
+        exit 1
+    fi
+
+    echo "开始给镜像打标签"
+    #打tag
+    docker tag $app_id:v$service_version $docker_registry_host/$PROJECT-$deploy_env/$app_id:v$service_version-$deploy_env
+    if [ $? -ne 0 ]; then
+        echo "Error: 镜像打标签失败"
+        exit 1
+    fi
+
+    echo "开始推送镜像"
+    #推送到镜像仓库
+    docker push $docker_registry_host/$PROJECT-$deploy_env/$app_id:v$service_version-$deploy_env
+    if [ $? -ne 0 ]; then
+        echo "Error: 推送镜像失败"
+        exit 1
+    fi
+}
+
+run() {
+    cd $src_root
+
+    export APP_ID=$app_id
+    export LOG_V=1
+    export LOG_STDOUT=true
+    export LOG_DIR=/data/paas/logs/$app_id
+    export HTTP_PERF=tcp://0.0.0.0:$HTTP_PERF_PORT
+    export GRPC="tcp://0.0.0.0:$GRPC_PORT/?timeout=60s&idle_timeout=60s"
+    export HTTP="tcp://0.0.0.0:$HTTP_PORT/?timeout=60s"
+    export ETCD_ENDPOINTS=192.168.100.10:2379,192.168.100.11:2379,192.168.100.16:2379
+    export ETCD_PREFIX=mapgoo-pass-$deploy_env
+
+    export DAP_TARGET=etcd://default/dap-go
+    export CAP_TARGET=etcd://default/cap-go
+    export DMS_TARGET=etcd://default/dms
+    export UMS_TARGET=etcd://default/ums
+    export DSS_TARGET=etcd://default/dss
+    export HMS_TARGET=etcd://default/hms
+    export VMS_TARGET=etcd://default/vms
+    export CMS_TARGET=etcd://default/cms
+    export DCS_TARGET=etcd://default/dcs
+    export SOCOLGATEWAY_TARGET=etcd://default/socolgateway
+    export SOCOLTASK_TARGET=etcd://default/socoltask
+    export REPORT_TARGET=etcd://default/ReportService
+    export PMS_TARGET=etcd://default/PackageManagerService
+    export CommonService_TARGET=etcd://default/CommonService
+    export LiveService_TARGET=etcd://default/LiveService
+    export DeviceUpdateService_TARGET=etcd://default/DeviceUpdateService
+    export SocolEstimateService_TARGET=etcd://default/SocolEstimateService
+    export CloudVideoSnapService_TARGET=etcd://default/CloudVideoSnapService
+
+    ./$app_id -conf configs-$deploy_env/
+}
+
+check_env() {
+    if [ -z $deploy_env ]; then
+        echo "Warning: You not define a deploy env, use the default deploy env: dev, you can use --env or -e define the deploy env"
+        deploy_env=dev
+    else
+        case "$deploy_env" in
+            dev|test|uat|prod) ;;
+            *)
+                echo "Error: Not support deploy env, you can only use dev|test|uat|prod"
+                exit 1
+                ;;
+        esac
+    fi
+    return 0
+}
+
+check_version() {
+    if [ -z $version ]; then
+        echo "Error: when you build a $build_target target, you must use --version or -v define a version"
+        exit 1
+    fi
+    return 0
+}
+
+for option
+do
+    case "$option" in
+        -*=*) value=`echo "$option" | sed -e 's/[-_a-zA-Z0-9]*=//'` ;;
+           *) value="" ;;
+    esac
+
+    case "$option" in
+        help)               help=yes                ;;
+        run)                run=yes                 ;;
+        --env=*|-e=*)       deploy_env="$value"     ;;
+        --version=*|-v=*)   version="$value"        ;;
+        --target=*|-t=*)    build_target="$value"   ;;
+        *)
+            echo "$0: error: 不支持的参数 \"$option\""
+            help=yes
+            ;;
+    esac
+done
+
+if  [ $# == 0 ]; then
+    help=yes
+fi
+
+if [ -n $help ]  && [ "$help" = "yes" ]; then
+    print_help
+    exit 0
+fi
+
+if [ -n $run ] && [ "$run" = "yes" ]; then
+    check_env
+    run
+    exit 0
+fi
+
+if [ -z $build_target ]; then
+    echo "Error: You must use --target or -t define a build target"\
+    exit 1
+fi
+
+case "$build_target" in
+    bin)
+        check_version
+        check_env
+        build_bin $version $deploy_env
+        ;;
+    image)
+        check_version
+        check_env
+        build_image $version $deploy_env
+        ;;
+    interface)
+        build_interface
+        ;;
+    *)
+        echo "Error: Not support build target $build_target, you can only use bin|image|interface"
+        exit 1
+        ;;
+esac
+
+exit 0

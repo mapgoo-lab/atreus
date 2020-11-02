@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#代码根目录
+src_root=`pwd`
+app_id={{.Name}}
+PROJECT=mapgoo-paas
+HTTP_PERF_PORT=29000
+GRPC_PORT=9100
+HTTP_PORT=8100
+docker_registry_host=harbor.mapgoo.net
+docker_registry_user=mapgoo-paas
+docker_registry_passwd=Mapgoo-paas123
+
+build_interface() {
+
+    cd $src_root/api
+
+    #编译http接口文件
+    protoc --proto_path=$GOPATH/src \
+           --proto_path=$GOPATH/src/github.com/mapgoo-lab/atreus/third_party \
+           --proto_path=/$src_root/api \
+           --proto_path=$pb_path \
+           --bm_out=explicit_http=true:. \
+           api.proto
+
+    #编译grpc接口文件
+    protoc --proto_path=$GOPATH/src \
+           --proto_path=$GOPATH/src/github.com/mapgoo-lab/atreus/third_party \
+           --proto_path=/$src_root/api \
+           --proto_path=$pb_path \
+           --gofast_out=plugins=grpc:. \
+           api.proto
+}
+
+. public

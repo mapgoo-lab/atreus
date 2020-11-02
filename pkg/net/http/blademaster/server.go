@@ -19,6 +19,8 @@ import (
 	"github.com/mapgoo-lab/atreus/pkg/net/ip"
 	"github.com/mapgoo-lab/atreus/pkg/net/metadata"
 	xtime "github.com/mapgoo-lab/atreus/pkg/time"
+	"github.com/mapgoo-lab/atreus/pkg/conf/env"
+	"github.com/mapgoo-lab/atreus/pkg/naming"
 
 	"github.com/pkg/errors"
 )
@@ -114,6 +116,48 @@ func (engine *Engine) Start() error {
 	}()
 
 	return nil
+}
+
+func (engine *Engine) ServiceRegister(registry naming.Registry, version string, Metadata map[string]string) (error) {
+	appid := fmt.Sprintf("http-%s", env.AppID)
+	zone := env.Zone
+	RunContainer := env.RunContainer
+	hostname := fmt.Sprintf("http-%s-%s-%d-%d", env.AppID, env.Hostname, time.Now().Unix(), os.Getpid())
+
+	host := ""
+	if RunContainer == "true" || RunContainer == "1" {
+		host = ip.InternalIP()
+	} else {
+		host = env.Hostname
+	}
+
+	if len(host) == 0 {
+		return fmt.Errorf("There is not a valid interface to register")
+	}
+
+	addr := engine.conf.Addr
+
+	kv := strings.Split(addr, ":")
+	if len(kv) != 2 {
+		return fmt.Errorf("bad addr config")
+	}
+
+	addrs := make([]string, 0)
+	addrs = append(addrs, fmt.Sprintf("http://%s:%s", host, kv[1]))
+
+	_, err := registry.Register(context.Background(), &naming.Instance{
+		Region:	  env.Region,
+		Zone:     zone,
+		Env:	  env.DeployEnv,
+		AppID:    appid,
+		Hostname: hostname,
+		Addrs:    addrs,
+		Version:  version,
+		LastTs:   time.Now().Unix(),
+		Metadata: Metadata,
+	})
+
+	return err
 }
 
 // Engine is the framework's instance, it contains the muxer, middleware and configuration settings.

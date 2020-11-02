@@ -167,7 +167,7 @@ func loadValues(base string) (map[string]*Value, error) {
 			return nil, fmt.Errorf("paladin: read dir %s error: %s", base, err)
 		}
 		for _, file := range files {
-			if !file.IsDir() && (file.Mode()&os.ModeSymlink) != os.ModeSymlink {
+			if !file.IsDir() {
 				paths = append(paths, path.Join(base, file.Name()))
 			}
 		}
@@ -177,12 +177,17 @@ func loadValues(base string) (map[string]*Value, error) {
 	if len(paths) == 0 {
 		return nil, errors.New("empty config path")
 	}
-	values := make(map[string]*Value, len(paths))
+	values := make(map[string]*Value, 0)
 	for _, fpath := range paths {
-		if values[path.Base(fpath)], err = loadValue(fpath); err != nil {
-			return nil, err
+		if value, errLoad := loadValue(fpath); errLoad == nil {
+			values[path.Base(fpath)] = value
 		}
 	}
+
+	if len(values) == 0 {
+		return nil, fmt.Errorf("loadValue from %s all failed", base)
+	}
+
 	return values, nil
 }
 
