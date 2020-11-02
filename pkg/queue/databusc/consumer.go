@@ -55,7 +55,7 @@ func NewConsumer(param *ConsumerParam) (ConsumerEvent, error) {
 	handle.config["session.timeout.ms"] = 6000
 	handle.config["client.id"] = fmt.Sprintf("rdkafka-%d-%d", time.Now().Unix(), os.Getpid())
 	handle.config["auto.offset.reset"] = "latest"
-	handle.config["auto.commit.enable"] = true
+	handle.config["enable.auto.commit"] = true
 	handle.config["enable.auto.offset.store"] = true
 	handle.config["socket.keepalive.enable"] = true
 	
