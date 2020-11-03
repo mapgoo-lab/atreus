@@ -19,6 +19,8 @@ type ProducerParam struct {
 	Topic string
 	IsAck bool
 	KafkaVer string
+	//0:channel 1:sync
+	ConsumerMode int
 }
 
 type producerEvent struct {
@@ -37,23 +39,34 @@ func NewAsyncProducer(param *ProducerParam) (ProducerEvent, error) {
 	handle.config["bootstrap.servers"] = param.Address
 	handle.config["partitioner"] = "consistent_random"
 	handle.config["socket.keepalive.enable"] = true
-	handle.config["produce.offset.report"] = false
-	
+	handle.config["go.batch.producer"] = true
+	handle.config["go.delivery.reports"] = false
+	handle.config["request.required.acks"] = 1
+	handle.config["acks"] = 1
+
 	producer, err := kafka.NewProducer(&handle.config)
 	if err != nil {
 		log.Error("NewAsyncProducer error(topic:%s,err:%v).", param.Topic, err)
 		return nil, err
 	}
-	
+
 	handle.producer = producer
 
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Error("NewAsyncProducer exception(r:%+v)", r)
+			}
+		}()
+
 		for e := range handle.producer.Events() {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				m := ev
 				if m.TopicPartition.Error != nil {
 					log.Error("Delivery failed(err:%v,Key:%s).", m.TopicPartition.Error, string(m.Key))
+				} else {
+					log.Error("Delivery report(err:%v,Key:%s).", m.TopicPartition.Error, string(m.Key))
 				}
 
 			default:
@@ -73,21 +86,29 @@ func (handle *producerEvent) SendMessage(data []byte, key string) error {
 	message.Value = data
 	message.Timestamp = time.Now()
 
-	for {
-		err := handle.producer.Produce(message, nil)
-		if err != nil {
-			if err.Error() == kafka.ErrQueueFull.String() {
-				log.Error("SendMessage ErrQueueFull(topic:%s,err:%v).", handle.param.Topic, err)
-				handle.producer.Flush(100)
-				continue
-			} else {
-				log.Error("SendMessage error(topic:%s,err:%v).", handle.param.Topic, err)
-				return err
-			}
+	go func (msg *kafka.Message) {
+		if handle.param.ConsumerMode == 0 {
+			handle.producer.ProduceChannel() <- msg
 		} else {
-			break
+			i := 0
+			for i < 3 {
+				err := handle.producer.Produce(msg, nil)
+				if err != nil {
+					if err.Error() == kafka.ErrQueueFull.String() {
+						log.Error("SendMessage ErrQueueFull(topic:%s,err:%v).", handle.param.Topic, err)
+						handle.producer.Flush(100)
+						continue
+					} else {
+						log.Error("SendMessage error(topic:%s,err:%v).", handle.param.Topic, err)
+						i++
+						continue
+					}
+				} else {
+					break
+				}
+			}
 		}
-	}
+	}(message)
 
 	return nil
 }
