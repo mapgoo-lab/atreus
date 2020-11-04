@@ -179,11 +179,13 @@ func (handle consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession
 	for {
 		select {
 		case msg := <-claim.Messages():
-			err := handle.event.dealhanle.DealMessage(msg.Value, msg.Topic, msg.Partition, msg.Offset, handle.event.groupid)
-			if err != nil {
-				log.Error("Message failed(topic:%s,partition:%d,offset:%d,err:%v)", msg.Topic, msg.Partition, msg.Offset, err)
-			}
-			sess.MarkMessage(msg, "")
+			if msg != nil {
+				err := handle.event.dealhanle.DealMessage(msg.Value, msg.Topic, msg.Partition, msg.Offset, handle.event.groupid)
+				if err != nil {
+					log.Error("Message failed(topic:%s,partition:%d,offset:%d,err:%v)", msg.Topic, msg.Partition, msg.Offset, err)
+				}
+				sess.MarkMessage(msg, "")
+			}	
 			break
 		case <-sess.Context().Done():
 			return errors.New("Context is close.")
