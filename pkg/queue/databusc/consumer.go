@@ -1,7 +1,7 @@
 package databusc
 
 import (
-	"encoding/json"
+	_ "encoding/json"
 	"fmt"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"os"
