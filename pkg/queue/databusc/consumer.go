@@ -1,7 +1,6 @@
 package databusc
 
 import (
-	_ "encoding/json"
 	"fmt"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"os"
@@ -51,7 +50,16 @@ type consumerEvent struct {
 	sis *Consistent
 }
 
-func NewConsumer(param *ConsumerParam, Id int) (ConsumerEvent, error) {
+func NewConsumer(param *ConsumerParam, appname string, Id int) (ConsumerEvent, error) {
+	handle, err := NewConsumerHandle(param, appname, Id)
+	return handle, err
+}
+
+func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerEvent, error) {
+	if appname == "" {
+		appname = "rdkafka"
+	}
+
 	handle := new(consumerEvent)
 	handle.isclose = false
 	handle.param = param
@@ -61,14 +69,12 @@ func NewConsumer(param *ConsumerParam, Id int) (ConsumerEvent, error) {
 	handle.config["broker.address.family"] = "v4"
 	handle.config["group.id"] = param.GroupId
 	handle.config["session.timeout.ms"] = 6000
-	handle.config["client.id"] = fmt.Sprintf("rdkafka-%d-%d-%d", time.Now().Unix(), os.Getpid(), Id)
+	handle.config["client.id"] = fmt.Sprintf("%s-%d-%d-%d", appname, time.Now().Unix(), os.Getpid(), Id)
 	handle.config["auto.offset.reset"] = "latest"
 	handle.config["enable.auto.commit"] = true
 	handle.config["enable.auto.offset.store"] = true
 	handle.config["socket.keepalive.enable"] = true
-//	handle.config["statistics.interval.ms"] = 5000
 	handle.config["go.events.channel.enable"] = true
-//	handle.config["go.application.rebalance.enable"] = true
 	handle.config["enable.partition.eof"] = true
 
 	consumer, err := kafka.NewConsumer(&handle.config)
@@ -180,10 +186,12 @@ func (handle *consumerEvent) Start() error {
 				switch e := ev.(type) {
 				case *kafka.Message:
 					handle.SendToChannel(e, index)
-//				case *kafka.Stats:
-//					var stats map[string]interface{}
-//					json.Unmarshal([]byte(e.String()), &stats)
-//					log.Info("Stats: %v messages (%v bytes) messages consumed.", stats["rxmsgs"], stats["rxmsg_bytes"])
+				case kafka.AssignedPartitions:
+					log.Error("AssignedPartitions(e:%v,%+v).", e, e.Partitions)
+				case kafka.RevokedPartitions:
+					log.Error("RevokedPartitions(e:%v).", e)
+				case kafka.PartitionEOF:
+					log.Error("PartitionEOF(e:%v).", e)
 				case kafka.Error:
 					log.Error("consumer error(code:%v,e:%v).", e.Code(), e)
 					if e.Code() == kafka.ErrAllBrokersDown {
