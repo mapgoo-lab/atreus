@@ -244,10 +244,14 @@ func (handle *consumerEvent) Close() {
 	}
 	log.Info("wait consumerEvent is close(topic:%s).", handle.param.Topic)
 	handle.wg.Wait()
+	handle.consumer.Close()
 	for i := 0; i < handle.param.ThreadNum; i++ {
+		for len(handle.queuelist[i]) > 0 {
+			log.Info("wait queuelist deal(topic:%s,i:%d).", handle.param.Topic, i)
+			time.Sleep(10*time.Millisecond)
+		}
 		close(handle.queuelist[i])
 	}
-	handle.consumer.Close()
 	log.Info("consumerEvent is closed(topic:%s).", handle.param.Topic)
 }
 
