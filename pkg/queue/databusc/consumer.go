@@ -37,6 +37,7 @@ type ConsumerParam struct {
 	//0:commit 1:commitmsg 2:auto
 	AutoCommitMode int
 	ThreadNum int
+	QueueLen int
 }
 
 type consumerEvent struct {
@@ -94,6 +95,10 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 		handle.param.ThreadNum = 51
 	}
 
+	if handle.param.QueueLen <= 0 {
+		handle.param.QueueLen = 2
+	}
+
 	handle.sis = New()
 	for i := 0; i < handle.param.ThreadNum; i++ {
 		elt := fmt.Sprintf("%d", i)
@@ -102,7 +107,7 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 
 	handle.queuelist = make([]chan *kafka.Message, handle.param.ThreadNum)
 	for i := 0; i < handle.param.ThreadNum; i++ {
-		handle.queuelist[i] = make(chan *kafka.Message, 2)
+		handle.queuelist[i] = make(chan *kafka.Message, handle.param.QueueLen)
 		go func(index int) {
 			defer func() {
 				if r := recover(); r != nil {
@@ -247,8 +252,8 @@ func (handle *consumerEvent) Close() {
 	handle.consumer.Close()
 	for i := 0; i < handle.param.ThreadNum; i++ {
 		for len(handle.queuelist[i]) > 0 {
-			log.Info("wait queuelist deal(topic:%s,i:%d).", handle.param.Topic, i)
 			time.Sleep(10*time.Millisecond)
+			log.Info("wait queuelist deal(topic:%s,i:%d,len:%d).", handle.param.Topic, i, len(handle.queuelist[i]))
 		}
 		close(handle.queuelist[i])
 	}
