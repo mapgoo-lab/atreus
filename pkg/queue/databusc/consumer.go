@@ -171,7 +171,7 @@ func (handle *consumerEvent) Start() error {
 			}
 		}()
 
-		for {
+		for handle.isclose == false {
 			err := handle.consumer.SubscribeTopics([]string{handle.param.Topic}, nil)
 			if err != nil {
 				log.Error("SubscribeTopics error(err:%v,topic:%v).", err, handle.param.Topic)
