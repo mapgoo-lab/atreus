@@ -34,8 +34,8 @@ type ConsumerParam struct {
 	Dealhanle ConsumerDeal
 	//0:poll 1:channel
 	ConsumerMode int
-	//0:commit 1:commitmsg 2:auto
-	AutoCommitMode int
+	//0:timer commitmsg 1:commitmsg 2:auto
+	CommitMode int
 	ThreadNum int
 	QueueLen int
 }
@@ -98,7 +98,7 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 	}
 
 	if handle.param.QueueLen <= 0 {
-		handle.param.QueueLen = 2
+		handle.param.QueueLen = 5
 	}
 
 	handle.sis = New()
@@ -152,13 +152,13 @@ func (handle *consumerEvent) SendToChannel(msg *kafka.Message, index int) {
 	}
 
 	handle.queuelist[mod] <- msg
-	if handle.param.AutoCommitMode == 0 {
+	if handle.param.CommitMode == 0 {
 		if index > 1000 {
-			handle.consumer.Commit()
+			handle.consumer.CommitMessage(msg)
 			index = 0
 		}
 		index++
-	} else if handle.param.AutoCommitMode == 1 {
+	} else if handle.param.CommitMode == 1 {
 		handle.consumer.CommitMessage(msg)
 	}
 }
@@ -233,7 +233,7 @@ func (handle *consumerEvent) Start() error {
 			}
 		}
 
-		if handle.param.AutoCommitMode != 1 {
+		if handle.param.CommitMode != 2 {
 			handle.consumer.Commit()
 		}
 
