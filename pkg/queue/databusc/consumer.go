@@ -111,16 +111,10 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 	for i := 0; i < handle.param.ThreadNum; i++ {
 		handle.queuelist[i] = make(chan *kafka.Message, handle.param.QueueLen)
 		go func(index int) {
-			defer func() {
-				if r := recover(); r != nil {
-					log.Error("deal chan exception(r:%+v,index:%d)", r, index)
-				}
-			}()
-
 			for {
 				msg, ok := <-handle.queuelist[index]
 				if ok {
-					handle.param.Dealhanle.DealMessage(msg)
+					handle.DealMessage(msg)
 				} else {
 					log.Error("deal chan is close(index:%d).", index)
 					break
@@ -266,3 +260,24 @@ func (handle *consumerEvent) CommitMessage(msg *kafka.Message) error {
 	_, err := handle.consumer.CommitMessage(msg)
 	return err
 }
+
+func (handle *consumerEvent) DealMessage(msg *kafka.Message) error {
+	if msg == nil {
+		log.Error("DealMessage msg is nil")
+		return nil
+	}
+	
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("DealMessage exception(r:%+v,Partition:%d)", r, msg.TopicPartition.Partition)
+		}
+	}()
+
+	err := handle.param.Dealhanle.DealMessage(msg)
+	if err != nil {
+		log.Error("DealMessage failed(partition:%d,err:%v)", msg.TopicPartition.Partition, err)
+	}
+	
+	return err
+}
+

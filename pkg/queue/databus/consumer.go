@@ -171,19 +171,33 @@ func (handle consumerGroupHandler) Setup(sess sarama.ConsumerGroupSession) error
 	handle.event.dealhanle.Setup(sess.Claims(), sess.MemberID(), sess.GenerationID())
 	return nil
 }
+
 func (handle consumerGroupHandler) Cleanup(sess sarama.ConsumerGroupSession) error {
 	handle.event.dealhanle.Cleanup(sess.Claims(), sess.MemberID(), sess.GenerationID())
 	return nil
 }
+
+func (handle consumerGroupHandler) DealMessage(data []byte, topic string, partition int32, offset int64, groupid string) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("DealMessage exception(r:%+v,topic:%s,partition:%d,offset:%d)", r, topic, partition, offset)
+		}
+	}()
+		
+	err := handle.event.dealhanle.DealMessage(data, topic, partition, offset, groupid)
+	if err != nil {
+		log.Error("DealMessage failed(topic:%s,partition:%d,offset:%d,err:%v)", topic, partition, offset, err)
+	}
+	
+	return err
+}
+
 func (handle consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for {
 		select {
 		case msg := <-claim.Messages():
 			if msg != nil {
-				err := handle.event.dealhanle.DealMessage(msg.Value, msg.Topic, msg.Partition, msg.Offset, handle.event.groupid)
-				if err != nil {
-					log.Error("Message failed(topic:%s,partition:%d,offset:%d,err:%v)", msg.Topic, msg.Partition, msg.Offset, err)
-				}
+				handle.DealMessage(msg.Value, msg.Topic, msg.Partition, msg.Offset, handle.event.groupid)
 				sess.MarkMessage(msg, "")
 			}	
 			break
