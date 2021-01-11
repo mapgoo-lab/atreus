@@ -10,6 +10,12 @@ type ProducerEvent interface {
 	//发送消息接口
 	SendMessage(data []byte, key string) error
 
+	//发送消息到指定分区接口
+	SendMessagePartition(data []byte, partition uint32) error
+
+	//发送消息到分区取模接口
+	SendMessageByMod(data []byte, key uint32) error
+
 	//关闭生产者
 	Close()
 }
@@ -28,6 +34,7 @@ type producerEvent struct {
 	param *ProducerParam
 	config kafka.ConfigMap
 	producer *kafka.Producer
+	maxpartition uint32
 }
 
 func NewAsyncProducer(param *ProducerParam) (ProducerEvent, error) {
@@ -39,7 +46,6 @@ func NewAsyncProducer(param *ProducerParam) (ProducerEvent, error) {
 	handle.config["bootstrap.servers"] = param.Address
 	handle.config["partitioner"] = "consistent_random"
 	handle.config["socket.keepalive.enable"] = true
-	handle.config["go.batch.producer"] = true
 	handle.config["go.delivery.reports"] = false
 	handle.config["request.required.acks"] = 1
 	handle.config["acks"] = 1
@@ -51,6 +57,16 @@ func NewAsyncProducer(param *ProducerParam) (ProducerEvent, error) {
 	}
 
 	handle.producer = producer
+
+	medaresp, medaerr := handle.producer.GetMetadata(&param.Topic, false, 300)
+	if medaerr != nil {
+		log.Error("NewAsyncProducer error(topic:%s,medaerr:%v).", param.Topic, medaerr)
+		return nil, medaerr
+	}
+	
+	handle.maxpartition = uint32(len(medaresp.Topics[param.Topic].Partitions))
+
+	log.Info("NewAsyncProducer(topic:%s,maxpartition:%d).", param.Topic, handle.maxpartition)
 
 	go func() {
 		defer func() {
@@ -79,9 +95,25 @@ func NewAsyncProducer(param *ProducerParam) (ProducerEvent, error) {
 }
 
 func (handle *producerEvent) SendMessage(data []byte, key string) error {
+	return handle.transMessage(data, key, -1)
+}
+
+func (handle *producerEvent) SendMessagePartition(data []byte, partition uint32) error {
+	return handle.transMessage(data, "", int32(partition))
+}
+
+func (handle *producerEvent) SendMessageByMod(data []byte, key uint32) error {
+	var partition int32 = int32(key % handle.maxpartition)
+	return handle.transMessage(data, "", partition)
+}
+
+func (handle *producerEvent) transMessage(data []byte, key string, partition int32) error {
 	message := new(kafka.Message)
 	message.TopicPartition.Topic = &handle.param.Topic
 	message.TopicPartition.Partition = kafka.PartitionAny
+	if partition >= 0 {
+		message.TopicPartition.Partition = partition
+	}
 	message.Key = []byte(key)
 	message.Value = data
 	message.Timestamp = time.Now()
@@ -95,11 +127,11 @@ func (handle *producerEvent) SendMessage(data []byte, key string) error {
 				err := handle.producer.Produce(msg, nil)
 				if err != nil {
 					if err.Error() == kafka.ErrQueueFull.String() {
-						log.Error("SendMessage ErrQueueFull(topic:%s,err:%v).", handle.param.Topic, err)
+						log.Error("transMessage ErrQueueFull(topic:%s,err:%v).", handle.param.Topic, err)
 						handle.producer.Flush(100)
 						continue
 					} else {
-						log.Error("SendMessage error(topic:%s,err:%v).", handle.param.Topic, err)
+						log.Error("transMessage error(topic:%s,err:%v).", handle.param.Topic, err)
 						i++
 						continue
 					}
