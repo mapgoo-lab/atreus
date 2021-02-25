@@ -165,6 +165,15 @@ func (c *Context) JSON(data interface{}, err error) {
 	code := http.StatusOK
 	c.Error = err
 	bcode := ecode.Cause(err)
+
+	isSimple := c.engine.conf.UseSimpleJson
+	if isSimple == false {
+		useSimplejson := c.Request.Form.Get("useSimpleJson")
+		if useSimplejson == "1" || useSimplejson == "true" {
+			isSimple = true
+		}
+	}
+
 	// TODO app allow 5xx?
 	/*
 		if bcode.Code() == -500 {
@@ -176,7 +185,7 @@ func (c *Context) JSON(data interface{}, err error) {
 		Code:    bcode.Code(),
 		Message: bcode.Message(),
 		Data:    data,
-		IsSimple: c.engine.conf.UseSimpleJson,
+		IsSimple: isSimple,
 	})
 }
 
