@@ -78,6 +78,9 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 	if handle.param.ConsumerMode == 1 {
 		handle.config["go.events.channel.enable"] = true
 	}
+	if handle.param.CommitMode == 2 {
+		handle.config["enable.auto.commit"] = false
+	}
 	handle.config["enable.partition.eof"] = true
 
 	consumer, err := kafka.NewConsumer(&handle.config)
@@ -227,7 +230,7 @@ func (handle *consumerEvent) Start() error {
 			}
 		}
 
-		if handle.param.CommitMode != 2 {
+		if handle.param.CommitMode == 0 || handle.param.CommitMode == 1 {
 			handle.consumer.Commit()
 		}
 
