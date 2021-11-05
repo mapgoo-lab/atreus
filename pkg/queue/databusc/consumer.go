@@ -38,6 +38,8 @@ type ConsumerParam struct {
 	CommitMode int
 	ThreadNum int
 	QueueLen int
+	SessionMs int
+	PollMs int
 }
 
 type consumerEvent struct {
@@ -69,7 +71,8 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 	handle.config["bootstrap.servers"] = param.Address
 	handle.config["broker.address.family"] = "v4"
 	handle.config["group.id"] = param.GroupId
-	handle.config["session.timeout.ms"] = 6000
+	handle.config["session.timeout.ms"] = 120000
+	handle.config["max.poll.interval.ms"] = 600000
 	handle.config["client.id"] = fmt.Sprintf("%s-%d-%d-%d", appname, time.Now().Unix(), os.Getpid(), Id)
 	handle.config["auto.offset.reset"] = "latest"
 	handle.config["enable.auto.commit"] = true
@@ -80,6 +83,12 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 	}
 	if handle.param.CommitMode == 2 {
 		handle.config["enable.auto.commit"] = false
+	}
+	if handle.param.SessionMs > 0 {
+		handle.config["session.timeout.ms"] = handle.param.SessionMs
+	}
+	if handle.param.PollMs > 0 {
+		handle.config["max.poll.interval.ms"] = handle.param.PollMs
 	}
 	handle.config["enable.partition.eof"] = true
 
