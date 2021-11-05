@@ -140,21 +140,19 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 
 func (handle *consumerEvent) SendToChannel(msg *kafka.Message, index int) {
 	var mod int32 = 0
-	iseffective := false
 	key := string(msg.Key)
+	if handle.param.CommitMode == 2 {
+		key = strconv.Itoa(int(msg.TopicPartition.Partition))
+	}
+	
 	if key != ""{
 		modstr, err := handle.sis.Get(key)
 		if err == nil {
 			convstr, converr := strconv.Atoi(modstr)
 			if converr == nil {
-				iseffective = true
 				mod = int32(convstr)
 			}
 		}
-	}
-
-	if iseffective == false {
-		mod = msg.TopicPartition.Partition % int32(handle.param.ThreadNum)
 	}
 
 	handle.queuelist[mod] <- msg
