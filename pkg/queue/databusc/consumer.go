@@ -48,6 +48,7 @@ type consumerEvent struct {
 	config kafka.ConfigMap
 	consumer *kafka.Consumer
 	wg *sync.WaitGroup
+	wge *sync.WaitGroup
 	exit chan int
 	queuelist []chan *kafka.Message
 	sis *Consistent
@@ -119,6 +120,8 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 		handle.sis.Add(elt)
 	}
 
+	handle.wge = new(sync.WaitGroup)
+	handle.wge.Add(handle.param.ThreadNum)
 	handle.queuelist = make([]chan *kafka.Message, handle.param.ThreadNum)
 	for i := 0; i < handle.param.ThreadNum; i++ {
 		handle.queuelist[i] = make(chan *kafka.Message, handle.param.QueueLen)
@@ -132,6 +135,8 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 					break
 				}
 			}
+			log.Error("deal chan is exited(index:%d).", index)
+			handle.wge.Done()
 		}(i)
 	}
 
@@ -263,6 +268,7 @@ func (handle *consumerEvent) Close() {
 		}
 		close(handle.queuelist[i])
 	}
+	handle.wge.Wait()
 	log.Info("consumerEvent is closed(topic:%s).", handle.param.Topic)
 }
 
