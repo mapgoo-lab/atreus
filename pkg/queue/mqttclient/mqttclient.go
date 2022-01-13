@@ -4,6 +4,7 @@ import (
 	"errors"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/mapgoo-lab/atreus/pkg/log"
+	"strings"
 	"sync"
 	"time"
 )
@@ -11,19 +12,19 @@ import (
 //使用者必须实现的接口
 type MqttConsumerHandle interface {
 	//接收消息
-	SubMessage(data []byte) error
+	SubMessage(clientId string, topic string, messageId uint16, data []byte) error
 }
 
 //使用者必须实现的接口
 type MqttEventHandle interface {
 	//连接事件
-	ConnectEvent() error
+	ConnectEvent(clientId string) error
 
 	//断开连接事件
-	DisConnectEvent() error
+	DisConnectEvent(clientId string, err error) error
 
 	//重连事件
-	ReconnectEvent() error
+	ReconnectEvent(clientId string) error
 }
 
 //最好不要直接使用这个结构，通过NewMqttParam得到有默认值
@@ -99,7 +100,8 @@ type MqttClientHandle interface {
 
 type mqttClientHandle struct {
 	//消费消息回调函数(key:topic,value:topic对应的回调函数)
-	HandleList map[string]MqttConsumerHandle
+	HandleList     map[string]MqttConsumerHandle
+	TopicSplitList map[string][]string
 
 	//事件回调函数
 	EventHandle MqttEventHandle
@@ -130,6 +132,7 @@ func NewMqttClient(param *MqttParam, handle MqttEventHandle) (MqttClientHandle, 
 	client := new(mqttClientHandle)
 	client.Lock = new(sync.RWMutex)
 	client.HandleList = make(map[string]MqttConsumerHandle)
+	client.TopicSplitList = make(map[string][]string)
 	client.EventHandle = handle
 	client.ConnectFunc = client.ConnectHandler
 	client.ConnectLostFunc = client.ConnectLostHandler
@@ -160,6 +163,7 @@ func NewMqttClient(param *MqttParam, handle MqttEventHandle) (MqttClientHandle, 
 		return client, token.Error()
 	}
 
+	log.Info("NewMqttClient success(Server:%s,ClientId:%s).", param.Server, param.ClientId)
 	return client, nil
 }
 
@@ -180,10 +184,21 @@ func (d *mqttClientHandle) Subscribe(topic string, qos byte, handle MqttConsumer
 		return errors.New("handle is empty.")
 	}
 
+	topickey := ""
+	topiclist := strings.Split(topic, "/")
+	topiclen := len(topiclist)
+	if topiclen > 2 && topiclist[0] == "$share" {
+		topiclist = topiclist[2:]
+		topickey = "/" + strings.Join(topiclist, "/")
+	} else {
+		topickey = topic
+	}
+
 	d.Lock.Lock()
 	defer d.Lock.Unlock()
-	if _, ok := d.HandleList[topic]; !ok {
-		d.HandleList[topic] = handle
+	if _, ok := d.HandleList[topickey]; !ok {
+		d.HandleList[topickey] = handle
+		d.TopicSplitList[topickey] = topiclist
 	}
 
 	token := d.MqttClient.Subscribe(topic, qos, nil)
@@ -191,6 +206,8 @@ func (d *mqttClientHandle) Subscribe(topic string, qos byte, handle MqttConsumer
 		log.Info("Subscribe failed(err:%s).", token.Error())
 		return token.Error()
 	}
+
+	log.Info("Subscribe success(topic:%s).", topic)
 
 	return nil
 }
@@ -235,6 +252,7 @@ func (d *mqttClientHandle) Unsubscribe(topic string) error {
 		delete(d.HandleList, topic)
 	}
 
+	log.Info("Unsubscribe success(topic:%s).", topic)
 	return nil
 }
 
@@ -245,9 +263,8 @@ func (d *mqttClientHandle) Disconnect(quiesce uint) {
 
 func (d *mqttClientHandle) ConnectHandler(client mqtt.Client) {
 	reader := client.OptionsReader()
-	log.Info("ConnectHandler(ClientID:%+v).", reader.ClientID())
 
-	err := d.EventHandle.ConnectEvent()
+	err := d.EventHandle.ConnectEvent(reader.ClientID())
 	if err != nil {
 		log.Error("ConnectEvent return failed(ClientID:%+v,err:%v).", reader.ClientID(), err)
 		return
@@ -258,11 +275,10 @@ func (d *mqttClientHandle) ConnectHandler(client mqtt.Client) {
 
 func (d *mqttClientHandle) ConnectLostHandler(client mqtt.Client, err error) {
 	reader := client.OptionsReader()
-	log.Error("ConnectLostHandler(ClientID:%+v,err:%v).", reader.ClientID(), err)
 
-	err = d.EventHandle.DisConnectEvent()
-	if err != nil {
-		log.Error("DisConnectEvent return failed(ClientID:%+v,err:%v).", reader.ClientID(), err)
+	callerr := d.EventHandle.DisConnectEvent(reader.ClientID(), err)
+	if callerr != nil {
+		log.Error("DisConnectEvent return failed(ClientID:%+v,callerr:%v).", reader.ClientID(), callerr)
 		return
 	}
 
@@ -271,9 +287,8 @@ func (d *mqttClientHandle) ConnectLostHandler(client mqtt.Client, err error) {
 
 func (d *mqttClientHandle) ReConnectHandler(client mqtt.Client, opt *mqtt.ClientOptions) {
 	reader := client.OptionsReader()
-	log.Error("ReConnectHandler(ClientID:%+v).", reader.ClientID())
 
-	err := d.EventHandle.ReconnectEvent()
+	err := d.EventHandle.ReconnectEvent(reader.ClientID())
 	if err != nil {
 		log.Error("ReconnectEvent return failed(ClientID:%+v,err:%v).", reader.ClientID(), err)
 		return
@@ -282,21 +297,44 @@ func (d *mqttClientHandle) ReConnectHandler(client mqtt.Client, opt *mqtt.Client
 	return
 }
 
+func (d *mqttClientHandle) isSameTopic(topic string) (bool, string) {
+	topiclist := strings.Split(topic, "/")
+	topiclen := len(topiclist)
+
+	for key, value := range d.TopicSplitList {
+		subtopiclen := len(value)
+		for i, topicsplit := range value {
+			if i < topiclen {
+				if topicsplit != topiclist[i] && topicsplit == "#" && topicsplit == "+" {
+					break
+				} else if topicsplit == "#" {
+					return true, key
+				}
+
+				if (i == (topiclen - 1)) && (i == (subtopiclen - 1)) {
+					return true, key
+				}
+			}
+		}
+	}
+
+	return false, ""
+}
+
 func (d *mqttClientHandle) getMsgHandle(topic string) (MqttConsumerHandle, error) {
 	d.Lock.RLock()
 	defer d.Lock.RUnlock()
-	handle, ok := d.HandleList[topic]
-	if !ok {
+	isexist, topickey := d.isSameTopic(topic)
+	if isexist == false {
 		log.Error("getMsgHandle return failed(topic:%s).", topic)
-		return handle, errors.New("订阅已取消")
+		return nil, errors.New("订阅已取消")
 	}
 
-	return handle, nil
+	return d.HandleList[topickey], nil
 }
 
 func (d *mqttClientHandle) MessageSubHandler(client mqtt.Client, msg mqtt.Message) {
 	reader := client.OptionsReader()
-	log.Info("SubMessageEvent(ClientID:%+v,Payload:%s,Topic:%s,Duplicate:%v,Qos:%v,Retained:%v,MessageID:%d).", reader.ClientID(), msg.Payload(), msg.Topic(), msg.Duplicate(), msg.Qos(), msg.Retained(), msg.MessageID())
 
 	topic := msg.Topic()
 	handle, err := d.getMsgHandle(topic)
@@ -305,7 +343,7 @@ func (d *mqttClientHandle) MessageSubHandler(client mqtt.Client, msg mqtt.Messag
 		return
 	}
 
-	err = handle.SubMessage(msg.Payload())
+	err = handle.SubMessage(reader.ClientID(), msg.Topic(), msg.MessageID(), msg.Payload())
 	if err != nil {
 		log.Error("SubMessage return failed(ClientID:%+v,Payload:%s,Topic:%s,Duplicate:%v,Qos:%v,Retained:%v,MessageID:%d,err:%v).", client.OptionsReader(), msg.Payload(), msg.Topic(), msg.Duplicate(), msg.Qos(), msg.Retained(), msg.MessageID(), err)
 		return
