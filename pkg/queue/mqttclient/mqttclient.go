@@ -159,7 +159,7 @@ func NewMqttClient(param *MqttParam, handle MqttEventHandle) (MqttClientHandle, 
 	client.MqttClient = mqtt.NewClient(client.Opts)
 	token := client.MqttClient.Connect()
 	if token.Wait() && token.Error() != nil {
-		log.Info("NewMqttClient failed(err:%s,opts:%+v).", token.Error(), client.Opts)
+		log.Error("NewMqttClient failed(err:%s,opts:%+v).", token.Error(), client.Opts)
 		return client, token.Error()
 	}
 
@@ -169,18 +169,24 @@ func NewMqttClient(param *MqttParam, handle MqttEventHandle) (MqttClientHandle, 
 
 //订阅消息
 func (d *mqttClientHandle) Subscribe(topic string, qos byte, handle MqttConsumerHandle) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("Subscribe exception(r:%+v)", r)
+		}
+	}()
+		
 	if topic == "" {
-		log.Info("Subscribe topic is empty.")
+		log.Error("Subscribe topic is empty.")
 		return errors.New("topic is empty.")
 	}
 
 	if qos <= 0 || qos > 2 {
-		log.Info("Subscribe qos is invaild(qos:%d).", qos)
+		log.Error("Subscribe qos is invaild(qos:%d).", qos)
 		return errors.New("qos is invaild.")
 	}
 
 	if handle == nil {
-		log.Info("Subscribe handle is empty.")
+		log.Error("Subscribe handle is empty.")
 		return errors.New("handle is empty.")
 	}
 
@@ -203,7 +209,7 @@ func (d *mqttClientHandle) Subscribe(topic string, qos byte, handle MqttConsumer
 
 	token := d.MqttClient.Subscribe(topic, qos, nil)
 	if token.Wait() && token.Error() != nil {
-		log.Info("Subscribe failed(err:%s).", token.Error())
+		log.Error("Subscribe failed(err:%s).", token.Error())
 		return token.Error()
 	}
 
@@ -214,19 +220,25 @@ func (d *mqttClientHandle) Subscribe(topic string, qos byte, handle MqttConsumer
 
 //发布消息
 func (d *mqttClientHandle) Publish(topic string, qos byte, retained bool, payload interface{}) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("Publish exception(r:%+v)", r)
+		}
+	}()
+	
 	if topic == "" {
-		log.Info("Publish topic is empty(payload:%v).", payload)
+		log.Error("Publish topic is empty(payload:%v).", payload)
 		return errors.New("topic is empty.")
 	}
 
 	if qos <= 0 || qos > 2 {
-		log.Info("Publish qos is invaild(qos:%d,payload:%v).", qos, payload)
+		log.Error("Publish qos is invaild(qos:%d,payload:%v).", qos, payload)
 		return errors.New("qos is invaild.")
 	}
 
 	token := d.MqttClient.Publish(topic, qos, retained, payload)
 	if token.Wait() && token.Error() != nil {
-		log.Info("Publish failed(err:%s,payload:%v).", token.Error(), payload)
+		log.Error("Publish failed(err:%s,payload:%v).", token.Error(), payload)
 		return token.Error()
 	}
 
@@ -235,14 +247,20 @@ func (d *mqttClientHandle) Publish(topic string, qos byte, retained bool, payloa
 
 //取消订阅
 func (d *mqttClientHandle) Unsubscribe(topic string) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("Unsubscribe exception(r:%+v)", r)
+		}
+	}()
+	
 	if topic == "" {
-		log.Info("Unsubscribe topic is empty.")
+		log.Error("Unsubscribe topic is empty.")
 		return errors.New("topic is empty.")
 	}
 
 	token := d.MqttClient.Unsubscribe(topic)
 	if token.Wait() && token.Error() != nil {
-		log.Info("Unsubscribe failed(err:%s).", token.Error())
+		log.Error("Unsubscribe failed(err:%s).", token.Error())
 		return token.Error()
 	}
 
