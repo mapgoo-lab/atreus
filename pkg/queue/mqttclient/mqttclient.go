@@ -276,10 +276,22 @@ func (d *mqttClientHandle) Unsubscribe(topic string) error {
 
 //断开连接
 func (d *mqttClientHandle) Disconnect(quiesce uint) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("Disconnect exception(r:%+v)", r)
+		}
+	}()
+	
 	d.MqttClient.Disconnect(quiesce)
 }
 
 func (d *mqttClientHandle) ConnectHandler(client mqtt.Client) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("ConnectHandler exception(r:%+v)", r)
+		}
+	}()
+	
 	reader := client.OptionsReader()
 
 	err := d.EventHandle.ConnectEvent(reader.ClientID())
@@ -292,6 +304,12 @@ func (d *mqttClientHandle) ConnectHandler(client mqtt.Client) {
 }
 
 func (d *mqttClientHandle) ConnectLostHandler(client mqtt.Client, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("ConnectLostHandler exception(r:%+v)", r)
+		}
+	}()
+	
 	reader := client.OptionsReader()
 
 	callerr := d.EventHandle.DisConnectEvent(reader.ClientID(), err)
@@ -304,6 +322,12 @@ func (d *mqttClientHandle) ConnectLostHandler(client mqtt.Client, err error) {
 }
 
 func (d *mqttClientHandle) ReConnectHandler(client mqtt.Client, opt *mqtt.ClientOptions) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("ReConnectHandler exception(r:%+v)", r)
+		}
+	}()
+	
 	reader := client.OptionsReader()
 
 	err := d.EventHandle.ReconnectEvent(reader.ClientID())
@@ -352,6 +376,12 @@ func (d *mqttClientHandle) getMsgHandle(topic string) (MqttConsumerHandle, error
 }
 
 func (d *mqttClientHandle) MessageSubHandler(client mqtt.Client, msg mqtt.Message) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("MessageSubHandler exception(r:%+v)", r)
+		}
+	}()
+	
 	reader := client.OptionsReader()
 
 	topic := msg.Topic()
