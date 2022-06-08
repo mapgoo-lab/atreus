@@ -293,7 +293,7 @@ func (c *Client) dial(ctx context.Context, target string, opts ...grpc.DialOptio
 		ctx, cancel = context.WithTimeout(ctx, time.Duration(conf.Dial))
 		defer cancel()
 	}
-	if u, e := url.Parse(target); e == nil {
+	if u, e := url.Parse(target); e == nil && u.Scheme != "dns" {
 		v := u.Query()
 		for _, c := range c.conf.Clusters {
 			v.Add(naming.MetaCluster, c)
