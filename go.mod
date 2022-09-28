@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Shopify/sarama v1.26.4
-	github.com/coreos/etcd v3.3.22+incompatible // indirect
+	go.etcd.io/etcd/v3 v3.5.0 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200428022330-06a60b6afbbc
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -31,7 +31,6 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/tsuna/gohbase v0.0.0-20200416162044-e8dcfdb6a5fb
 	github.com/urfave/cli v1.22.4
-	go.etcd.io/etcd v3.3.22+incompatible
 	go.uber.org/zap v1.15.0 // indirect
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 	golang.org/x/tools v0.0.0-20200619023621-037be6a06566
