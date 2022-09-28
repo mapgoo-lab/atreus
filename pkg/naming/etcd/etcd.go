@@ -12,7 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/coreos/etcd/mvcc/mvccpb"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 	"github.com/mapgoo-lab/atreus/pkg/log"
 	"github.com/mapgoo-lab/atreus/pkg/naming"
 	"go.etcd.io/etcd/client/v3"
