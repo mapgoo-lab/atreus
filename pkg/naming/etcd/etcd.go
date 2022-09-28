@@ -15,7 +15,7 @@ import (
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/mapgoo-lab/atreus/pkg/log"
 	"github.com/mapgoo-lab/atreus/pkg/naming"
-	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
 )
 

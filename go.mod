@@ -1,6 +1,6 @@
 module github.com/mapgoo-lab/atreus
 
-go 1.12
+go 1.18
 
 require (
 	github.com/BurntSushi/toml v0.3.1
@@ -35,7 +35,7 @@ require (
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 	golang.org/x/tools v0.0.0-20200619023621-037be6a06566
 	google.golang.org/genproto v0.0.0-20200620020550-bd6e04640131
-	google.golang.org/grpc v1.29.1
+	google.golang.org/grpc v1.49.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/yaml.v2 v2.3.0
@@ -44,6 +44,3 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace github.com/coreos/bbolt v1.3.5 => go.etcd.io/bbolt v1.3.5
-
-replace go.etcd.io/bbolt v1.3.5 => github.com/coreos/bbolt v1.3.5
