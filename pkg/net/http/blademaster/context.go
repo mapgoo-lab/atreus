@@ -182,9 +182,9 @@ func (c *Context) JSON(data interface{}, err error) {
 	*/
 	writeStatusCode(c.Writer, bcode.Code())
 	c.Render(code, render.JSON{
-		Code:    bcode.Code(),
-		Message: bcode.Message(),
-		Data:    data,
+		Code:     bcode.Code(),
+		Message:  bcode.Message(),
+		Data:     data,
 		IsSimple: isSimple,
 	})
 }

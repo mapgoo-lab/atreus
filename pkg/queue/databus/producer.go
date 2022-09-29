@@ -1,11 +1,11 @@
 package databus
 
 import (
-	"time"
 	"errors"
-	"strconv"
 	"github.com/Shopify/sarama"
 	"github.com/mapgoo-lab/atreus/pkg/log"
+	"strconv"
+	"time"
 )
 
 type ProducerEvent interface {
@@ -18,32 +18,32 @@ type ProducerEvent interface {
 
 const (
 	//返回一个手动选择分区的分割器,也就是获取msg中指定的`partition`
-    KafkaManual uint32 = 1
-	
+	KafkaManual uint32 = 1
+
 	//通过随机函数随机获取一个分区号
-    KafkaRandom uint32 = 2
-	
+	KafkaRandom uint32 = 2
+
 	//环形选择,也就是在所有分区中循环选择一个
-    KafkaRoundRobin uint32 = 3
-	
+	KafkaRoundRobin uint32 = 3
+
 	//通过msg中的key生成hash值,选择分区
-    KafkaHash uint32 = 4
+	KafkaHash uint32 = 4
 )
 
 type producerEvent struct {
-	address []string
-	topic string
-	isack bool
-	producer sarama.AsyncProducer
-	partlen int
+	address     []string
+	topic       string
+	isack       bool
+	producer    sarama.AsyncProducer
+	partlen     int
 	partitioner uint32
 }
 
 type ProducerParam struct {
-	Address []string
-	Topic string
-	IsAck bool
-	KafkaVer string
+	Address     []string
+	Topic       string
+	IsAck       bool
+	KafkaVer    string
 	Partitioner uint32
 }
 
@@ -71,7 +71,6 @@ func NewAsyncProducer(param ProducerParam) (ProducerEvent, error) {
 		config.Producer.Return.Errors = true
 	}
 
-
 	//设置使用的kafka版本,如果低于V0_10_0_0版本,消息中的timestrap没有作用.需要消费和生产同时配置
 	//注意，版本设置不对的话，kafka会返回很奇怪的错误，并且无法成功发送消息
 	version, err := sarama.ParseKafkaVersion(param.KafkaVer)
@@ -84,29 +83,29 @@ func NewAsyncProducer(param ProducerParam) (ProducerEvent, error) {
 	client, err := sarama.NewClient(param.Address, config)
 	if err != nil {
 		log.Error("Error sarama.NewClient: %v", err)
-        return nil, err
+		return nil, err
 	}
-	
+
 	partitions, err := client.Partitions(param.Topic)
 	if err != nil {
 		log.Error("Error client.Partitions: %v", err)
-        return nil, err
+		return nil, err
 	}
 	partlen := len(partitions)
 	client.Close()
-	
-    producer, err := sarama.NewAsyncProducer(param.Address, config)
-    if err != nil {
+
+	producer, err := sarama.NewAsyncProducer(param.Address, config)
+	if err != nil {
 		log.Error("Error sarama.NewAsyncProducer: %v", err)
-        return nil, err
+		return nil, err
 	}
 
 	return &producerEvent{
-		address: param.Address,
-		topic: param.Topic,
-		isack: param.IsAck,
-		producer: producer,
-		partlen: partlen,
+		address:     param.Address,
+		topic:       param.Topic,
+		isack:       param.IsAck,
+		producer:    producer,
+		partlen:     partlen,
 		partitioner: param.Partitioner,
 	}, nil
 }
@@ -124,10 +123,10 @@ func (handle *producerEvent) SendMessage(data []byte, key string) error {
 
 	// 注意：这里的msg必须得是新构建的变量，不然你会发现发送过去的消息内容都是一样的，因为批次发送消息的关系。
 	msg := &sarama.ProducerMessage{
-		Topic: handle.topic,
-		Key:sarama.ByteEncoder(key),
-		Value:sarama.ByteEncoder(data),
-		Partition:partindex,
+		Topic:     handle.topic,
+		Key:       sarama.ByteEncoder(key),
+		Value:     sarama.ByteEncoder(data),
+		Partition: partindex,
 	}
 
 	//使用通道发送
@@ -140,7 +139,7 @@ func (handle *producerEvent) SendMessage(data []byte, key string) error {
 		case fail := <-handle.producer.Errors():
 			log.Error("SendMessage fail: %v", fail.Err)
 			return fail.Err
-		case timeout := <-time.After(time.Second*10):
+		case timeout := <-time.After(time.Second * 10):
 			log.Error("ack msg error %p.", timeout)
 			return errors.New("ack msg timeout.")
 		}

@@ -17,5 +17,5 @@ type Config struct {
 	ExecTimeout  time.Duration   // execute sql timeout
 	TranTimeout  time.Duration   // transaction sql timeout
 	Breaker      *breaker.Config // breaker
-	DriverName   string			 // Database drivername
+	DriverName   string          // Database drivername
 }

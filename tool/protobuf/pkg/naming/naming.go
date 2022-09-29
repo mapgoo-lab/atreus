@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/utils"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/utils"
 	"github.com/pkg/errors"
 	"github.com/siddontang/go/ioutil2"
 )

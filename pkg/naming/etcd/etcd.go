@@ -6,16 +6,16 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"go.etcd.io/etcd/api/v3/mvccpb"
 	"github.com/mapgoo-lab/atreus/pkg/log"
 	"github.com/mapgoo-lab/atreus/pkg/naming"
-	"go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 	"google.golang.org/grpc"
 )
 

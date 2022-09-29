@@ -14,13 +14,13 @@ import (
 	"time"
 
 	"github.com/mapgoo-lab/atreus/pkg/conf/dsn"
+	"github.com/mapgoo-lab/atreus/pkg/conf/env"
 	"github.com/mapgoo-lab/atreus/pkg/log"
+	"github.com/mapgoo-lab/atreus/pkg/naming"
 	"github.com/mapgoo-lab/atreus/pkg/net/criticality"
 	"github.com/mapgoo-lab/atreus/pkg/net/ip"
 	"github.com/mapgoo-lab/atreus/pkg/net/metadata"
 	xtime "github.com/mapgoo-lab/atreus/pkg/time"
-	"github.com/mapgoo-lab/atreus/pkg/conf/env"
-	"github.com/mapgoo-lab/atreus/pkg/naming"
 
 	"github.com/pkg/errors"
 )
@@ -32,9 +32,9 @@ const (
 var (
 	_ IRouter = &Engine{}
 
-	_httpDSN       string
-	default405Body = []byte("405 method not allowed")
-	default404Body = []byte("404 page not found")
+	_httpDSN          string
+	default405Body    = []byte("405 method not allowed")
+	default404Body    = []byte("404 page not found")
 	defaultSimpleJson = false
 )
 
@@ -78,12 +78,12 @@ func (f HandlerFunc) ServeHTTP(c *Context) {
 
 // ServerConfig is the bm server config model
 type ServerConfig struct {
-	Network      string         `dsn:"network"`
-	Addr         string         `dsn:"address"`
-	Timeout      xtime.Duration `dsn:"query.timeout"`
-	ReadTimeout  xtime.Duration `dsn:"query.readTimeout"`
-	WriteTimeout xtime.Duration `dsn:"query.writeTimeout"`
-	UseSimpleJson bool		`dsn:"query.useSimpleJson"`
+	Network       string         `dsn:"network"`
+	Addr          string         `dsn:"address"`
+	Timeout       xtime.Duration `dsn:"query.timeout"`
+	ReadTimeout   xtime.Duration `dsn:"query.readTimeout"`
+	WriteTimeout  xtime.Duration `dsn:"query.writeTimeout"`
+	UseSimpleJson bool           `dsn:"query.useSimpleJson"`
 }
 
 // MethodConfig is
@@ -118,7 +118,7 @@ func (engine *Engine) Start() error {
 	return nil
 }
 
-func (engine *Engine) ServiceRegister(registry naming.Registry, version string, Metadata map[string]string) (error) {
+func (engine *Engine) ServiceRegister(registry naming.Registry, version string, Metadata map[string]string) error {
 	appid := fmt.Sprintf("http-%s", env.AppID)
 	zone := env.Zone
 	RunContainer := env.RunContainer
@@ -146,9 +146,9 @@ func (engine *Engine) ServiceRegister(registry naming.Registry, version string, 
 	addrs = append(addrs, fmt.Sprintf("http://%s:%s", host, kv[1]))
 
 	_, err := registry.Register(context.Background(), &naming.Instance{
-		Region:	  env.Region,
+		Region:   env.Region,
 		Zone:     zone,
-		Env:	  env.DeployEnv,
+		Env:      env.DeployEnv,
 		AppID:    appid,
 		Hostname: hostname,
 		Addrs:    addrs,

@@ -39,7 +39,7 @@ const Name = "p2c"
 
 // newBuilder creates a new weighted-roundrobin balancer builder.
 func newBuilder() balancer.Builder {
-	return base.NewBalancerBuilder(Name, &p2cPickerBuilder{})
+	return base.NewBalancerBuilder(Name, &p2cPickerBuilder{}, base.Config{HealthCheck: true})
 }
 
 func init() {
@@ -107,13 +107,13 @@ type statistic struct {
 
 type p2cPickerBuilder struct{}
 
-func (*p2cPickerBuilder) Build(readySCs map[resolver.Address]balancer.SubConn) balancer.Picker {
+func (*p2cPickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
 	p := &p2cPicker{
 		colors: make(map[string]*p2cPicker),
 		r:      rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
-	for addr, sc := range readySCs {
-		meta, ok := addr.Metadata.(wmd.MD)
+	for sc, addr := range info.ReadySCs {
+		meta, ok := addr.Address.Metadata.(wmd.MD)
 		if !ok {
 			meta = wmd.MD{
 				Weight: 10,
@@ -121,7 +121,7 @@ func (*p2cPickerBuilder) Build(readySCs map[resolver.Address]balancer.SubConn) b
 		}
 		subc := &subConn{
 			conn: sc,
-			addr: addr,
+			addr: addr.Address,
 			meta: meta,
 
 			svrCPU:   500,
@@ -155,18 +155,18 @@ type p2cPicker struct {
 	lk       sync.Mutex
 }
 
-func (p *p2cPicker) Pick(ctx context.Context, opts balancer.PickInfo) (balancer.SubConn, func(balancer.DoneInfo), error) {
+func (p *p2cPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
 	// FIXME refactor to unify the color logic
-	color := nmd.String(ctx, nmd.Color)
+	color := nmd.String(info.Ctx, nmd.Color)
 	if color == "" && env.Color != "" {
 		color = env.Color
 	}
 	if color != "" {
 		if cp, ok := p.colors[color]; ok {
-			return cp.pick(ctx, opts)
+			return cp.pick(info.Ctx, info)
 		}
 	}
-	return p.pick(ctx, opts)
+	return p.pick(info.Ctx, info)
 }
 
 // choose two distinct nodes
@@ -187,12 +187,12 @@ func (p *p2cPicker) prePick() (nodeA *subConn, nodeB *subConn) {
 	return
 }
 
-func (p *p2cPicker) pick(ctx context.Context, opts balancer.PickInfo) (balancer.SubConn, func(balancer.DoneInfo), error) {
+func (p *p2cPicker) pick(ctx context.Context, opts balancer.PickInfo) (balancer.PickResult, error) {
 	var pc, upc *subConn
 	start := time.Now().UnixNano()
 
 	if len(p.subConns) <= 0 {
-		return nil, nil, balancer.ErrNoSubConnAvailable
+		return balancer.PickResult{SubConn: nil, Done: nil}, balancer.ErrNoSubConnAvailable
 	} else if len(p.subConns) == 1 {
 		pc = p.subConns[0]
 	} else {
@@ -218,7 +218,7 @@ func (p *p2cPicker) pick(ctx context.Context, opts balancer.PickInfo) (balancer.
 	}
 	atomic.AddInt64(&pc.inflight, 1)
 	atomic.AddInt64(&pc.reqs, 1)
-	return pc.conn, func(di balancer.DoneInfo) {
+	return balancer.PickResult{SubConn: pc.conn, Done: func(di balancer.DoneInfo) {
 		atomic.AddInt64(&pc.inflight, -1)
 		now := time.Now().UnixNano()
 		// get moving average ratio w
@@ -266,6 +266,7 @@ func (p *p2cPicker) pick(ctx context.Context, opts balancer.PickInfo) (balancer.
 				p.printStats()
 			}
 		}
+	},
 	}, nil
 }
 

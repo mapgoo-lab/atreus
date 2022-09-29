@@ -18,11 +18,11 @@ import (
 	xtime "github.com/mapgoo-lab/atreus/pkg/time"
 
 	//this package is for json format response
+	"github.com/mapgoo-lab/atreus/pkg/conf/env"
+	"github.com/mapgoo-lab/atreus/pkg/naming"
+	"github.com/mapgoo-lab/atreus/pkg/net/ip"
 	_ "github.com/mapgoo-lab/atreus/pkg/net/rpc/warden/internal/encoding/json"
 	"github.com/mapgoo-lab/atreus/pkg/net/rpc/warden/internal/status"
-	"github.com/mapgoo-lab/atreus/pkg/conf/env"
-	"github.com/mapgoo-lab/atreus/pkg/net/ip"
-	"github.com/mapgoo-lab/atreus/pkg/naming"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -324,7 +324,7 @@ func (s *Server) StartWithAddr() (*Server, net.Addr, error) {
 	return s, addr, nil
 }
 
-func (s *Server) ServiceRegister(registry naming.Registry, version string, Metadata map[string]string) (error) {
+func (s *Server) ServiceRegister(registry naming.Registry, version string, Metadata map[string]string) error {
 	appid := env.AppID
 	zone := env.Zone
 	RunContainer := env.RunContainer
@@ -352,9 +352,9 @@ func (s *Server) ServiceRegister(registry naming.Registry, version string, Metad
 	addrs = append(addrs, fmt.Sprintf("grpc://%s:%s", host, kv[1]))
 
 	_, err := registry.Register(context.Background(), &naming.Instance{
-		Region:	  env.Region,
+		Region:   env.Region,
 		Zone:     zone,
-		Env:	  env.DeployEnv,
+		Env:      env.DeployEnv,
 		AppID:    appid,
 		Hostname: hostname,
 		Addrs:    addrs,

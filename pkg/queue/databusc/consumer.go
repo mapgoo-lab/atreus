@@ -2,12 +2,12 @@ package databusc
 
 import (
 	"fmt"
+	"github.com/mapgoo-lab/atreus/pkg/log"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"os"
 	"strconv"
-	"time"
-	"github.com/mapgoo-lab/atreus/pkg/log"
 	"sync"
+	"time"
 )
 
 //使用者必须实现的接口
@@ -28,30 +28,30 @@ type ConsumerEvent interface {
 }
 
 type ConsumerParam struct {
-	Address string
-	GroupId string
-	Topic string
+	Address   string
+	GroupId   string
+	Topic     string
 	Dealhanle ConsumerDeal
 	//0:poll 1:channel
 	ConsumerMode int
 	//0:timer commitmsg 1:commitmsg 2:auto
 	CommitMode int
-	ThreadNum int
-	QueueLen int
-	SessionMs int
-	PollMs int
+	ThreadNum  int
+	QueueLen   int
+	SessionMs  int
+	PollMs     int
 }
 
 type consumerEvent struct {
-	isclose bool
-	param *ConsumerParam
-	config kafka.ConfigMap
-	consumer *kafka.Consumer
-	wg *sync.WaitGroup
-	wge *sync.WaitGroup
-	exit chan int
+	isclose   bool
+	param     *ConsumerParam
+	config    kafka.ConfigMap
+	consumer  *kafka.Consumer
+	wg        *sync.WaitGroup
+	wge       *sync.WaitGroup
+	exit      chan int
 	queuelist []chan *kafka.Message
-	sis *Consistent
+	sis       *Consistent
 }
 
 func NewConsumer(param *ConsumerParam, appname string, Id int) (ConsumerEvent, error) {
@@ -149,8 +149,8 @@ func (handle *consumerEvent) SendToChannel(msg *kafka.Message, index int) {
 	if handle.param.CommitMode == 2 {
 		key = strconv.Itoa(int(msg.TopicPartition.Partition))
 	}
-	
-	if key != ""{
+
+	if key != "" {
 		modstr, err := handle.sis.Get(key)
 		if err == nil {
 			convstr, converr := strconv.Atoi(modstr)
@@ -173,7 +173,7 @@ func (handle *consumerEvent) SendToChannel(msg *kafka.Message, index int) {
 }
 
 func (handle *consumerEvent) Start() error {
-	go func () {
+	go func() {
 		defer func() {
 			if r := recover(); r != nil {
 				log.Error("Start exception(r:%+v)", r)
@@ -184,7 +184,7 @@ func (handle *consumerEvent) Start() error {
 			err := handle.consumer.SubscribeTopics([]string{handle.param.Topic}, nil)
 			if err != nil {
 				log.Error("SubscribeTopics error(err:%v,topic:%v).", err, handle.param.Topic)
-				time.Sleep(time.Duration(1)*time.Second)
+				time.Sleep(time.Duration(1) * time.Second)
 			} else {
 				break
 			}
@@ -211,14 +211,14 @@ func (handle *consumerEvent) Start() error {
 				case kafka.Error:
 					log.Error("consumer error(code:%v,e:%v).", e.Code(), e)
 					if e.Code() == kafka.ErrAllBrokersDown {
-						time.Sleep(time.Duration(1)*time.Second)
+						time.Sleep(time.Duration(1) * time.Second)
 					}
 				default:
 					log.Error("Ignored consumer error(e:%v).", e)
 				}
 			} else {
 				select {
-				case <- handle.exit:
+				case <-handle.exit:
 					break
 
 				case ev := <-handle.consumer.Events():
@@ -263,7 +263,7 @@ func (handle *consumerEvent) Close() {
 	handle.consumer.Close()
 	for i := 0; i < handle.param.ThreadNum; i++ {
 		for len(handle.queuelist[i]) > 0 {
-			time.Sleep(10*time.Millisecond)
+			time.Sleep(10 * time.Millisecond)
 			log.Info("wait queuelist deal(topic:%s,i:%d,len:%d).", handle.param.Topic, i, len(handle.queuelist[i]))
 		}
 		close(handle.queuelist[i])
@@ -282,7 +282,7 @@ func (handle *consumerEvent) DealMessage(msg *kafka.Message) error {
 		log.Error("DealMessage msg is nil")
 		return nil
 	}
-	
+
 	defer func() {
 		if r := recover(); r != nil {
 			log.Error("DealMessage exception(r:%+v,Partition:%d)", r, msg.TopicPartition.Partition)
@@ -293,7 +293,6 @@ func (handle *consumerEvent) DealMessage(msg *kafka.Message) error {
 	if err != nil {
 		log.Error("DealMessage failed(partition:%d,err:%v)", msg.TopicPartition.Partition, err)
 	}
-	
+
 	return err
 }
-

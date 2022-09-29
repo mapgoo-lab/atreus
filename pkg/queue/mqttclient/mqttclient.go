@@ -174,7 +174,7 @@ func (d *mqttClientHandle) Subscribe(topic string, qos byte, handle MqttConsumer
 			log.Error("Subscribe exception(r:%+v)", r)
 		}
 	}()
-		
+
 	if topic == "" {
 		log.Error("Subscribe topic is empty.")
 		return errors.New("topic is empty.")
@@ -225,7 +225,7 @@ func (d *mqttClientHandle) Publish(topic string, qos byte, retained bool, payloa
 			log.Error("Publish exception(r:%+v)", r)
 		}
 	}()
-	
+
 	if topic == "" {
 		log.Error("Publish topic is empty(payload:%v).", payload)
 		return errors.New("topic is empty.")
@@ -252,7 +252,7 @@ func (d *mqttClientHandle) Unsubscribe(topic string) error {
 			log.Error("Unsubscribe exception(r:%+v)", r)
 		}
 	}()
-	
+
 	if topic == "" {
 		log.Error("Unsubscribe topic is empty.")
 		return errors.New("topic is empty.")
@@ -281,7 +281,7 @@ func (d *mqttClientHandle) Disconnect(quiesce uint) {
 			log.Error("Disconnect exception(r:%+v)", r)
 		}
 	}()
-	
+
 	d.MqttClient.Disconnect(quiesce)
 }
 
@@ -291,7 +291,7 @@ func (d *mqttClientHandle) ConnectHandler(client mqtt.Client) {
 			log.Error("ConnectHandler exception(r:%+v)", r)
 		}
 	}()
-	
+
 	reader := client.OptionsReader()
 
 	err := d.EventHandle.ConnectEvent(reader.ClientID())
@@ -309,7 +309,7 @@ func (d *mqttClientHandle) ConnectLostHandler(client mqtt.Client, err error) {
 			log.Error("ConnectLostHandler exception(r:%+v)", r)
 		}
 	}()
-	
+
 	reader := client.OptionsReader()
 
 	callerr := d.EventHandle.DisConnectEvent(reader.ClientID(), err)
@@ -327,7 +327,7 @@ func (d *mqttClientHandle) ReConnectHandler(client mqtt.Client, opt *mqtt.Client
 			log.Error("ReConnectHandler exception(r:%+v)", r)
 		}
 	}()
-	
+
 	reader := client.OptionsReader()
 
 	err := d.EventHandle.ReconnectEvent(reader.ClientID())
@@ -381,7 +381,7 @@ func (d *mqttClientHandle) MessageSubHandler(client mqtt.Client, msg mqtt.Messag
 			log.Error("MessageSubHandler exception(r:%+v)", r)
 		}
 	}()
-	
+
 	reader := client.OptionsReader()
 
 	topic := msg.Topic()

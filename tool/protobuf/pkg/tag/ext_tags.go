@@ -1,9 +1,9 @@
 package tag
 
 import (
-	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/extensions/gogoproto"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/extensions/gogoproto"
 )
 
 func GetMoreTags(field *descriptor.FieldDescriptorProto) *string {

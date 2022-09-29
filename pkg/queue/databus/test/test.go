@@ -1,15 +1,15 @@
 package main
 
 import (
-	"log"
 	"fmt"
-    pb "./api"
-	"github.com/mapgoo-lab/atreus/pkg/queue/databus"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
+	"github.com/mapgoo-lab/atreus/pkg/queue/databus"
+	pb "github.com/mapgoo-lab/atreus/pkg/queue/databus/test/api"
+	"log"
 )
 
-type ConsumerDealHandle struct {}
+type ConsumerDealHandle struct{}
 
 func (handle ConsumerDealHandle) DealMessage(data []byte) error {
 	//解包proto
@@ -30,7 +30,7 @@ func (handle ConsumerDealHandle) DealMessage(data []byte) error {
 		fmt.Printf("EventReq: %v\n", req)
 		fmt.Printf("UserRegEvent: %v\n", temp)
 	}
-	return nil 
+	return nil
 }
 
 func (handle ConsumerDealHandle) Setup(topicAndPartitions map[string][]int32, memberId string, generationId int32) {
@@ -47,11 +47,11 @@ func (handle ConsumerDealHandle) Cleanup(topicAndPartitions map[string][]int32, 
 	fmt.Printf("Cleanup MemberID:%q GenerationID:%d\n", memberId, generationId)
 }
 
-func main()  {
-	proparam := databus.ProducerParam {
-		Address: []string{"192.168.100.203:9092","192.168.100.203:9093"},
-		Topic: "test4",
-		IsAck: true,
+func main() {
+	proparam := databus.ProducerParam{
+		Address:  []string{"192.168.100.203:9092", "192.168.100.203:9093"},
+		Topic:    "test4",
+		IsAck:    true,
 		KafkaVer: "0.11.0.0",
 	}
 	producer, err := databus.NewAsyncProducer(proparam)
@@ -61,8 +61,8 @@ func main()  {
 	defer producer.Close()
 
 	var req *pb.EventReq = new(pb.EventReq)
-	req.Sequence = 123456;
-	req.Time = 232323;
+	req.Sequence = 123456
+	req.Time = 232323
 	req.BussiType = pb.EM_BUSSI_TYPE_EM_BUSSITYPE_USER
 	req.SubType = pb.EM_SUB_TYPE_EM_SUBTYPE_USERREG
 
@@ -88,12 +88,12 @@ func main()  {
 	fmt.Printf("-------------------------------------\n")
 
 	//-------------------------------------
-	conparam := databus.ConsumerParam {
-		Address: []string{"192.168.100.203:9092","192.168.100.203:9093"},
-		GroupId: "test4-group-1",
-		Topic: "test4",
+	conparam := databus.ConsumerParam{
+		Address:   []string{"192.168.100.203:9092", "192.168.100.203:9093"},
+		GroupId:   "test4-group-1",
+		Topic:     "test4",
 		DealHanle: ConsumerDealHandle{},
-		KafkaVer: "0.11.0.0",
+		KafkaVer:  "0.11.0.0",
 	}
 
 	consumer, err := databus.NewConsumer(conparam)

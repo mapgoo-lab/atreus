@@ -4,11 +4,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/generator"
-	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/naming"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/generator"
+	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/naming"
 )
 
 type ecode struct {

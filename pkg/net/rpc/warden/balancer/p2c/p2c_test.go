@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"google.golang.org/grpc/balancer/base"
 	"math/rand"
 	"strconv"
 	"sync/atomic"
@@ -113,55 +114,54 @@ func (s *testSubConn) Connect() {
 }
 
 func TestBalancerPick(t *testing.T) {
-	scs := map[resolver.Address]balancer.SubConn{}
-	sc1 := &testSubConn{
-		addr: resolver.Address{
-			Addr: "test1",
-			Metadata: wmeta.MD{
-				Weight: 8,
-			},
+	info := base.PickerBuildInfo{
+		ReadySCs: map[balancer.SubConn]base.SubConnInfo{},
+	}
+
+	addr1 := resolver.Address{
+		Addr: "test1",
+		Metadata: wmeta.MD{
+			Weight: 8,
 		},
 	}
-	sc2 := &testSubConn{
-		addr: resolver.Address{
-			Addr: "test2",
-			Metadata: wmeta.MD{
-				Weight: 4,
-				Color:  "red",
-			},
+	info.ReadySCs[&testSubConn{addr:addr1}] = base.SubConnInfo{Address:addr1}
+
+	addr2 := resolver.Address{
+		Addr: "test2",
+		Metadata: wmeta.MD{
+			Weight: 4,
+			Color:  "red",
 		},
 	}
-	sc3 := &testSubConn{
-		addr: resolver.Address{
-			Addr: "test3",
-			Metadata: wmeta.MD{
-				Weight: 2,
-				Color:  "red",
-			},
+	info.ReadySCs[&testSubConn{addr: addr2}] = base.SubConnInfo{Address:addr2}
+
+	addr3 := resolver.Address{
+		Addr: "test3",
+		Metadata: wmeta.MD{
+			Weight: 2,
+			Color:  "red",
 		},
 	}
-	sc4 := &testSubConn{
-		addr: resolver.Address{
-			Addr: "test4",
-			Metadata: wmeta.MD{
-				Weight: 2,
-				Color:  "purple",
-			},
+	info.ReadySCs[&testSubConn{addr: addr3}] = base.SubConnInfo{Address:addr3}
+
+	addr4 := resolver.Address{
+		Addr: "test4",
+		Metadata: wmeta.MD{
+			Weight: 2,
+			Color:  "purple",
 		},
 	}
-	scs[sc1.addr] = sc1
-	scs[sc2.addr] = sc2
-	scs[sc3.addr] = sc3
-	scs[sc4.addr] = sc4
+	info.ReadySCs[&testSubConn{addr: addr4}] = base.SubConnInfo{Address:addr4}
+
 	b := &p2cPickerBuilder{}
-	picker := b.Build(scs)
+	picker := b.Build(info)
 	res := []string{"test1", "test1", "test1", "test1"}
 	for i := 0; i < 3; i++ {
-		conn, _, err := picker.Pick(context.Background(), balancer.PickOptions{})
+		result, err := picker.Pick(balancer.PickInfo{Ctx: context.Background()})
 		if err != nil {
 			t.Fatalf("picker.Pick failed!idx:=%d", i)
 		}
-		sc := conn.(*testSubConn)
+		sc := result.SubConn.(*testSubConn)
 		if sc.addr.Addr != res[i] {
 			t.Fatalf("the subconn picked(%s),but expected(%s)", sc.addr.Addr, res[i])
 		}
@@ -169,11 +169,11 @@ func TestBalancerPick(t *testing.T) {
 
 	ctx := nmd.NewContext(context.Background(), nmd.New(map[string]interface{}{"color": "black"}))
 	for i := 0; i < 4; i++ {
-		conn, _, err := picker.Pick(ctx, balancer.PickOptions{})
+		result, err := picker.Pick(balancer.PickInfo{Ctx: ctx})
 		if err != nil {
 			t.Fatalf("picker.Pick failed!idx:=%d", i)
 		}
-		sc := conn.(*testSubConn)
+		sc := result.SubConn.(*testSubConn)
 		if sc.addr.Addr != res[i] {
 			t.Fatalf("the (%d) subconn picked(%s),but expected(%s)", i, sc.addr.Addr, res[i])
 		}
@@ -182,11 +182,11 @@ func TestBalancerPick(t *testing.T) {
 	env.Color = "purple"
 	ctx2 := context.Background()
 	for i := 0; i < 4; i++ {
-		conn, _, err := picker.Pick(ctx2, balancer.PickOptions{})
+		result, err := picker.Pick(balancer.PickInfo{Ctx: ctx2})
 		if err != nil {
 			t.Fatalf("picker.Pick failed!idx:=%d", i)
 		}
-		sc := conn.(*testSubConn)
+		sc := result.SubConn.(*testSubConn)
 		if sc.addr.Addr != "test4" {
 			t.Fatalf("the (%d) subconn picked(%s),but expected(%s)", i, sc.addr.Addr, res[i])
 		}
@@ -195,22 +195,26 @@ func TestBalancerPick(t *testing.T) {
 }
 
 func Benchmark_Wrr(b *testing.B) {
-	scs := map[resolver.Address]balancer.SubConn{}
+	//scs := map[resolver.Address]balancer.SubConn{}
+	pbi := base.PickerBuildInfo{
+		ReadySCs: map[balancer.SubConn]base.SubConnInfo{},
+	}
 	for i := 0; i < 50; i++ {
 		addr := resolver.Address{
 			Addr:     fmt.Sprintf("addr_%d", i),
 			Metadata: wmeta.MD{Weight: 10},
 		}
-		scs[addr] = &testSubConn{addr: addr}
+		//scs[addr] = &testSubConn{addr: addr}
+		pbi.ReadySCs[&testSubConn{addr:addr}] = base.SubConnInfo{Address: addr}
 	}
 	wpb := &p2cPickerBuilder{}
-	picker := wpb.Build(scs)
-	opt := balancer.PickOptions{}
+	picker := wpb.Build(pbi)
 	ctx := context.Background()
+	info := balancer.PickInfo{Ctx: ctx}
 	for idx := 0; idx < b.N; idx++ {
-		_, done, err := picker.Pick(ctx, opt)
+		result, err := picker.Pick(info)
 		if err != nil {
-			done(balancer.DoneInfo{})
+			result.Done(balancer.DoneInfo{})
 		}
 	}
 }
@@ -239,13 +243,17 @@ func newController(svrNum int, cliNum int) *controller {
 	}
 	//new clients
 	var clients []balancer.Picker
-	scs := map[resolver.Address]balancer.SubConn{}
+	//scs := map[resolver.Address]balancer.SubConn{}
+	pbi := base.PickerBuildInfo{
+		ReadySCs: map[balancer.SubConn]base.SubConnInfo{},
+	}
 	for _, v := range servers {
-		scs[v.addr] = v
+		//scs[v.addr] = v
+		pbi.ReadySCs[v] = base.SubConnInfo{Address: v.addr}
 	}
 	for i := 0; i < cliNum; i++ {
 		wpb := &p2cPickerBuilder{}
-		picker := wpb.Build(scs)
+		picker := wpb.Build(pbi)
 		clients = append(clients, picker)
 	}
 
@@ -262,7 +270,6 @@ type controller struct {
 }
 
 func (c *controller) launch(concurrency int) {
-	opt := balancer.PickOptions{}
 	bkg := context.Background()
 	for i := range c.clients {
 		for j := 0; j < concurrency; j++ {
@@ -270,8 +277,9 @@ func (c *controller) launch(concurrency int) {
 			go func() {
 				for {
 					ctx, cancel := context.WithTimeout(bkg, time.Millisecond*250)
-					sc, done, _ := picker.Pick(ctx, opt)
-					server := sc.(*testSubConn)
+					info := balancer.PickInfo{Ctx:ctx}
+					result, _ := picker.Pick(info)
+					server := result.SubConn.(*testSubConn)
 					server.connect(ctx)
 					var err error
 					if ctx.Err() != nil {
@@ -281,7 +289,7 @@ func (c *controller) launch(concurrency int) {
 					cpu := atomic.LoadInt64(&server.cpu)
 					md := make(map[string]string)
 					md[wmeta.CPUUsage] = strconv.FormatInt(cpu, 10)
-					done(balancer.DoneInfo{Trailer: metadata.New(md), Err: err})
+					result.Done(balancer.DoneInfo{Trailer: metadata.New(md), Err: err})
 					time.Sleep(time.Millisecond * 10)
 				}
 			}()

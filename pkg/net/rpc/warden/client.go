@@ -196,7 +196,8 @@ func NewClient(conf *ClientConfig, opt ...grpc.DialOption) *Client {
 	if err := c.SetConfig(conf); err != nil {
 		panic(err)
 	}
-	c.UseOpt(grpc.WithBalancerName(p2c.Name))
+	//c.UseOpt(grpc.WithBalancerName(p2c.Name))
+	grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, p2c.Name))
 	c.UseOpt(opt...)
 	return c
 }
