@@ -32,7 +32,7 @@ const Name = "wrr"
 
 // newBuilder creates a new weighted-roundrobin balancer builder.
 func newBuilder() balancer.Builder {
-	return base.NewBalancerBuilder(Name, &wrrPickerBuilder{})
+	return base.NewBalancerBuilder(Name, &wrrPickerBuilder{}, base.Config{HealthCheck: true})
 }
 
 func init() {
@@ -136,12 +136,12 @@ func Stats() grpc.UnaryClientInterceptor {
 
 type wrrPickerBuilder struct{}
 
-func (*wrrPickerBuilder) Build(readySCs map[resolver.Address]balancer.SubConn) balancer.Picker {
+func (*wrrPickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
 	p := &wrrPicker{
 		colors: make(map[string]*wrrPicker),
 	}
-	for addr, sc := range readySCs {
-		meta, ok := addr.Metadata.(wmeta.MD)
+	for sc, addr := range info.ReadySCs {
+		meta, ok := addr.Address.Metadata.(wmeta.MD)
 		if !ok {
 			meta = wmeta.MD{
 				Weight: 10,
@@ -149,7 +149,7 @@ func (*wrrPickerBuilder) Build(readySCs map[resolver.Address]balancer.SubConn) b
 		}
 		subc := &subConn{
 			conn: sc,
-			addr: addr,
+			addr: addr.Address,
 
 			meta:  meta,
 			ewt:   int64(meta.Weight),
@@ -192,27 +192,27 @@ type wrrPicker struct {
 	mu sync.Mutex
 }
 
-func (p *wrrPicker) Pick(ctx context.Context, opts balancer.PickInfo) (balancer.SubConn, func(balancer.DoneInfo), error) {
+func (p *wrrPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
 	// FIXME refactor to unify the color logic
-	color := nmd.String(ctx, nmd.Color)
+	color := nmd.String(info.Ctx, nmd.Color)
 	if color == "" && env.Color != "" {
 		color = env.Color
 	}
 	if color != "" {
 		if cp, ok := p.colors[color]; ok {
-			return cp.pick(ctx, opts)
+			return cp.pick(info.Ctx, info)
 		}
 	}
-	return p.pick(ctx, opts)
+	return p.pick(info.Ctx, info)
 }
 
-func (p *wrrPicker) pick(ctx context.Context, opts balancer.PickInfo) (balancer.SubConn, func(balancer.DoneInfo), error) {
+func (p *wrrPicker) pick(ctx context.Context, info balancer.PickInfo) (balancer.PickResult, error) {
 	var (
 		conn        *subConn
 		totalWeight int64
 	)
 	if len(p.subConns) <= 0 {
-		return nil, nil, balancer.ErrNoSubConnAvailable
+		return balancer.PickResult{SubConn: nil, Done: nil}, balancer.ErrNoSubConnAvailable
 	}
 	p.mu.Lock()
 	// nginx wrr load balancing algorithm: http://blog.csdn.net/zhangskd/article/details/50194069
@@ -232,7 +232,7 @@ func (p *wrrPicker) pick(ctx context.Context, opts balancer.PickInfo) (balancer.
 	//if !feature.DefaultGate.Enabled(dwrrFeature) {
 	//	return conn.conn, nil, nil
 	//}
-	return conn.conn, func(di balancer.DoneInfo) {
+	return balancer.PickResult{SubConn: conn.conn, Done: func(di balancer.DoneInfo) {
 		ev := int64(0) // error value ,if error set 1
 		if di.Err != nil {
 			if st, ok := status.FromError(di.Err); ok {
@@ -297,6 +297,7 @@ func (p *wrrPicker) pick(ctx context.Context, opts balancer.PickInfo) (balancer.
 		}
 		p.mu.Unlock()
 		log.Info("warden wrr(%s): %+v", conn.addr.ServerName, stats)
+	},
 	}, nil
 
 }
