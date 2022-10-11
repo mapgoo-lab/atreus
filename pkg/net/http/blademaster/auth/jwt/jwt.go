@@ -3,7 +3,7 @@ package jwt
 import (
 	"fmt"
 	"github.com/mapgoo-lab/atreus/pkg/log"
-	"github.com/mapgoo-lab/atreus/pkg/net/http/auth"
+	"github.com/mapgoo-lab/atreus/pkg/net/http/blademaster/auth"
 	"strings"
 	"time"
 
