@@ -1,12 +1,13 @@
 package jwt
 
 import (
+	"github.com/mapgoo-lab/atreus/pkg/net/http/blademaster/auth"
 	"fmt"
 	"github.com/mapgoo-lab/atreus/pkg/log"
-	"github.com/mapgoo-lab/atreus/pkg/net/http/blademaster/auth"
 	"strings"
 	"time"
 
+	"github.com/golang-jwt/jwt/v4"
 	bm "github.com/mapgoo-lab/atreus/pkg/net/http/blademaster"
 )
 
