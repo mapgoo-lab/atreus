@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(dsn string, config *gorm.Config) *gorm.DB {
+func NewClickhouse(dsn string, config *gorm.Config) *gorm.DB {
 	db, err := gorm.Open(clickhouse.Open(dsn), config)
 	if err != nil {
 		log.Error("failed to connect mysql database")
