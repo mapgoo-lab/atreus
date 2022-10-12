@@ -63,7 +63,7 @@ func (jwtAuth *JwtAuth) Auth(c *bm.Context) {
 	auths := strings.SplitN(c.Request.Header.Get(authorizationKey), " ", 2)
 	if len(auths) != 2 || !strings.EqualFold(auths[0], bearerWord) {
 		log.Error("Error header format: %s", auths)
-		c.Status(401)
+		c.AbortWithStatus(401)
 		return
 	}
 	jwtToken := auths[1]
