@@ -13,7 +13,11 @@ func NewMysql(dsn string, config *gorm.Config) *gorm.DB {
 		return nil
 	}
 
-	db.Use(&ObsPlugin{})
+	err = db.Use(&ObsPlugin{})
+	if err != nil {
+		log.Error("Use OrmObsPulgin error: %s", err)
+		return nil
+	}
 
 	return db
 }

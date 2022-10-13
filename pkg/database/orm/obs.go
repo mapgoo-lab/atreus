@@ -93,20 +93,66 @@ func (op *ObsPlugin) Name() string {
 
 func (op *ObsPlugin) Initialize(db *gorm.DB) (err error) {
 	//开始前
-	db.Callback().Create().Before("gorm:before_create").Register(callBackBeforeName, beforeCreate)
-	db.Callback().Query().Before("gorm:query").Register(callBackBeforeName, beforeQuery)
-	db.Callback().Delete().Before("gorm:before_delete").Register(callBackBeforeName, beforeDelete)
-	db.Callback().Update().Before("gorm:setup_reflect_value").Register(callBackBeforeName, beforeUpdate)
-	db.Callback().Row().Before("gorm:row").Register(callBackBeforeName, beforeRow)
-	db.Callback().Raw().Before("gorm:raw").Register(callBackBeforeName, beforeRaw)
+	err = db.Callback().Create().Before("gorm:before_create").Register(callBackBeforeName, beforeCreate)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Query().Before("gorm:query").Register(callBackBeforeName, beforeQuery)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Delete().Before("gorm:before_delete").Register(callBackBeforeName, beforeDelete)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Update().Before("gorm:setup_reflect_value").Register(callBackBeforeName, beforeUpdate)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Row().Before("gorm:row").Register(callBackBeforeName, beforeRow)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Raw().Before("gorm:raw").Register(callBackBeforeName, beforeRaw)
+	if err != nil {
+		return
+	}
 
 	// 结束后
-	db.Callback().Create().After("gorm:after_create").Register(callBackAfterName, after)
-	db.Callback().Query().After("gorm:after_query").Register(callBackAfterName, after)
-	db.Callback().Delete().After("gorm:after_delete").Register(callBackAfterName, after)
-	db.Callback().Update().After("gorm:after_update").Register(callBackAfterName, after)
-	db.Callback().Row().After("gorm:row").Register(callBackAfterName, after)
-	db.Callback().Raw().After("gorm:raw").Register(callBackAfterName, after)
+	err = db.Callback().Create().After("gorm:after_create").Register(callBackAfterName, after)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Query().After("gorm:after_query").Register(callBackAfterName, after)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Delete().After("gorm:after_delete").Register(callBackAfterName, after)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Update().After("gorm:after_update").Register(callBackAfterName, after)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Row().After("gorm:row").Register(callBackAfterName, after)
+	if err != nil {
+		return
+	}
+
+	err = db.Callback().Raw().After("gorm:raw").Register(callBackAfterName, after)
+	if err != nil {
+		return
+	}
 
 	return
 }
