@@ -58,9 +58,7 @@ func (b *sreBreaker) summary() (success int64, total int64) {
 func (b *sreBreaker) Allow() error {
 	success, total := b.summary()
 	k := b.k * float64(success)
-	if log.V(5) {
-		log.Info("breaker: request: %d, succee: %d, fail: %d", total, success, total-success)
-	}
+	log.Info("breaker: request: %d, succee: %d, fail: %d", total, success, total-success)
 	// check overflow requests = K * success
 	if total < b.request || float64(total) < k {
 		if atomic.LoadInt32(&b.state) == StateOpen {
@@ -73,9 +71,7 @@ func (b *sreBreaker) Allow() error {
 	}
 	dr := math.Max(0, (float64(total)-k)/float64(total+1))
 	drop := b.trueOnProba(dr)
-	if log.V(5) {
-		log.Info("breaker: drop ratio: %f, drop: %t", dr, drop)
-	}
+	log.Info("breaker: drop ratio: %f, drop: %t", dr, drop)
 	if drop {
 		return ecode.ServiceUnavailable
 	}

@@ -118,7 +118,7 @@ func (cors *cors) applyCORS(c *Context) {
 		return
 	}
 	if !cors.validateOrigin(origin) {
-		log.V(5).Info("The request's Origin header `%s` does not match any of allowed origins.", origin)
+		log.Info("The request's Origin header `%s` does not match any of allowed origins.", origin)
 		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
