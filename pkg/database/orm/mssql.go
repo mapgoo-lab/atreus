@@ -7,6 +7,10 @@ import (
 )
 
 func NewMSSQL(dsn string, config *gorm.Config) *gorm.DB {
+	if config.Logger == nil {
+		config.Logger = NewLogger()
+	}
+
 	db, err := gorm.Open(sqlserver.Open(dsn), config)
 	if err != nil {
 		log.Error("failed to connect mysql database")

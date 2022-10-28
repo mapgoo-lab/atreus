@@ -23,13 +23,13 @@ import (
 // V is at least the value of Config.VLevel, or of Config.Module for the source file containing the
 // call, the V call will log.
 // v must be more than 0.
-func V(v int32) Verbose {
+func V(v Level) Verbose {
 	var (
 		file string
 	)
 	if v < 0 {
 		return Verbose(false)
-	} else if c.V >= v {
+	} else if c.V >= int32(v) {
 		return Verbose(true)
 	}
 	if pc, _, _, ok := runtime.Caller(1); ok {
@@ -47,30 +47,37 @@ func V(v int32) Verbose {
 			match, _ = filepath.Match(filter, file)
 		}
 		if match {
-			return Verbose(lvl >= v)
+			return Verbose(lvl >= int32(v))
 		}
 	}
 	return Verbose(false)
 }
 
 // Info logs a message at the info log level.
-func (v Verbose) Info(format string, args ...interface{}) {
+func (v Verbose) Log(lv Level, format string, args ...interface{}) {
 	if v {
-		h.Log(context.Background(), _infoLevel, KVString(_log, fmt.Sprintf(format, args...)))
+		h.Log(context.Background(), lv, KVString(_log, fmt.Sprintf(format, args...)))
+	}
+}
+
+// Info logs a message at the info log level.
+func (v Verbose) Logc(ctx context.Context, lv Level, format string, args ...interface{}) {
+	if v {
+		h.Log(ctx, lv, KVString(_log, fmt.Sprintf(format, args...)))
 	}
 }
 
 // Infov logs a message at the info log level.
-func (v Verbose) Infov(ctx context.Context, args ...D) {
+func (v Verbose) Logv(ctx context.Context, lv Level, args ...D) {
 	if v {
-		h.Log(ctx, _infoLevel, args...)
+		h.Log(ctx, lv, args...)
 	}
 }
 
 // Infow logs a message with some additional context. The variadic key-value pairs are treated as they are in With.
-func (v Verbose) Infow(ctx context.Context, args ...interface{}) {
+func (v Verbose) Logw(ctx context.Context, lv Level, args ...interface{}) {
 	if v {
-		h.Log(ctx, _infoLevel, logw(args)...)
+		h.Log(ctx, lv, logw(args)...)
 	}
 }
 

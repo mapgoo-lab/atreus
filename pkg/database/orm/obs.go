@@ -74,7 +74,7 @@ func after(db *gorm.DB)  {
 	}
 
 	if ctx.trace != nil {
-		ctx.trace.SetTag(trace.String(trace.TagAddress, db.Statement.Table), trace.String(trace.TagComment, db.Config.Dialector.Explain(db.Statement.SQL.String(), db.Statement.Vars...)))
+		ctx.trace.SetTag(trace.String(trace.TagAddress, db.Statement.Table), trace.String(trace.TagComment, db.Dialector.Explain(db.Statement.SQL.String(), db.Statement.Vars...)))
 		ctx.trace.Finish(nil)
 	}
 

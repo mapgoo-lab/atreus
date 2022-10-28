@@ -53,7 +53,7 @@ func (redirectHook) Fire(entry *logrus.Entry) error {
 		args = append(args, D{Key: "logrus_lv", Value: logrusLv})
 	}
 	if verbose != 0 {
-		V(verbose).Infov(context.Background(), args...)
+		V(Level(verbose)).Logv(context.Background(), _infoLevel, args...)
 	} else {
 		h.Log(context.Background(), lv, args...)
 	}

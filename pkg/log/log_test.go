@@ -12,6 +12,7 @@ import (
 func initStdout() {
 	conf := &Config{
 		Stdout: true,
+		V: int32(_debugLevel),
 	}
 	Init(conf)
 }
@@ -21,6 +22,7 @@ func initFile() {
 		Dir: "/tmp",
 		// VLevel:  2,
 		Module: map[string]int32{"log_test": 1},
+		V: int32(_debugLevel),
 	}
 	Init(conf)
 }
@@ -31,6 +33,7 @@ type TestLog struct {
 	C string
 	D string
 }
+
 
 func testLog(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
@@ -47,6 +50,12 @@ func testLog(t *testing.T) {
 		Info("hello %s", "world")
 		Infov(context.Background(), KV("key", 2222222), KV("test2", "test"))
 		Infoc(context.Background(), "keys: %s %s...", "key1", "key2")
+	})
+
+	t.Run("Debug", func(t *testing.T) {
+		Debug("hello %s", "world")
+		Debugv(context.Background(), KV("key", 2222222), KV("test2", "test"))
+		Debugc(context.Background(), "keys: %s %s...", "key1", "key2")
 	})
 }
 

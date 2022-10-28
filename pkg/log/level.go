@@ -8,19 +8,19 @@ type Verbose bool
 
 // common log level.
 const (
-	_debugLevel Level = iota
-	_infoLevel
-	_warnLevel
+	_fatalLevel Level = iota
 	_errorLevel
-	_fatalLevel
+	_warnLevel
+	_infoLevel
+	_debugLevel
 )
 
 var levelNames = [...]string{
-	_debugLevel: "DEBUG",
-	_infoLevel:  "INFO",
-	_warnLevel:  "WARN",
-	_errorLevel: "ERROR",
-	_fatalLevel: "FATAL",
+	_fatalLevel: RedBold + "[FATAL]" + Reset,
+	_errorLevel: Red + "[ERROR]" + Reset,
+	_warnLevel:  Magenta +"[WARN]" + Reset,
+	_infoLevel:  Green + "[INFO]" + Reset,
+	_debugLevel: Yellow + "[DEBUG]" + Reset,
 }
 
 // String implementation.

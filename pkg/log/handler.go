@@ -90,7 +90,7 @@ func (hs Handlers) Log(ctx context.Context, lv Level, d ...D) {
 		}
 	}
 	if !hasSource {
-		fn := funcName(3)
+		fn := funcName(4)
 		errIncr(lv, fn)
 		d = append(d, KVString(_source, fn))
 	}
