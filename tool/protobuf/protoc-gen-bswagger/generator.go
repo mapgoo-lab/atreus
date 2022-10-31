@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
@@ -15,23 +16,43 @@ import (
 	"github.com/mapgoo-lab/atreus/tool/protobuf/pkg/typemap"
 )
 
+type SwaggerParams struct {
+	generator.ParamsBase
+	isSimpleJson bool
+}
+
+func (b *SwaggerParams) GetBase() *generator.ParamsBase {
+	return &b.ParamsBase
+}
+func (b *SwaggerParams) SetParam(key string, value string) error {
+	if key == "simplejson" {
+		if v, err := strconv.ParseBool(value); err == nil {
+			b.isSimpleJson = v
+		} else {
+			b.isSimpleJson = false
+		}
+
+	}
+	return nil
+}
+
 type swaggerGen struct {
 	generator.Base
 	// defsMap will fill into swagger's definitions
 	// key is full qualified proto name
-	defsMap map[string]*typemap.MessageDefinition
+	defsMap      map[string]*typemap.MessageDefinition
 	isSimpleJson bool
 }
 
 // NewSwaggerGenerator a swagger generator
-func NewSwaggerGenerator(isSimpleJson bool) *swaggerGen {
-	return &swaggerGen{
-		isSimpleJson: isSimpleJson,
-	}
+func NewSwaggerGenerator() *swaggerGen {
+	return &swaggerGen{}
 }
 
 func (t *swaggerGen) Generate(in *plugin.CodeGeneratorRequest) *plugin.CodeGeneratorResponse {
-	t.Setup(in)
+	params := &SwaggerParams{}
+	t.Setup(in, params)
+	t.isSimpleJson = params.isSimpleJson
 	resp := &plugin.CodeGeneratorResponse{}
 	for _, f := range t.GenFiles {
 		if len(f.Service) == 0 {
