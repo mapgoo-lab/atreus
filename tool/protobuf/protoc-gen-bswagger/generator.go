@@ -20,11 +20,14 @@ type swaggerGen struct {
 	// defsMap will fill into swagger's definitions
 	// key is full qualified proto name
 	defsMap map[string]*typemap.MessageDefinition
+	isSimpleJson bool
 }
 
 // NewSwaggerGenerator a swagger generator
-func NewSwaggerGenerator() *swaggerGen {
-	return &swaggerGen{}
+func NewSwaggerGenerator(isSimpleJson bool) *swaggerGen {
+	return &swaggerGen{
+		isSimpleJson: isSimpleJson,
+	}
 }
 
 func (t *swaggerGen) Generate(in *plugin.CodeGeneratorRequest) *plugin.CodeGeneratorResponse {
@@ -118,13 +121,18 @@ func (t *swaggerGen) generateSwagger(file *descriptor.FileDescriptorProto) *plug
 			// proto 里面的response只定义data里面的
 			// 所以需要把code msg data 这一级加上
 			resp.Schema.Type = "object"
-			resp.Schema.Properties = &swaggerSchemaObjectProperties{}
-			p := keyVal{Key: "code", Value: &schemaCore{Type: "integer"}}
-			*resp.Schema.Properties = append(*resp.Schema.Properties, p)
-			p = keyVal{Key: "message", Value: &schemaCore{Type: "string"}}
-			*resp.Schema.Properties = append(*resp.Schema.Properties, p)
-			p = keyVal{Key: "data", Value: schemaCore{Ref: "#/definitions/" + meth.GetOutputType()}}
-			*resp.Schema.Properties = append(*resp.Schema.Properties, p)
+			if t.isSimpleJson {
+				resp.Schema.Ref = "#/definitions/" + meth.GetOutputType()
+			} else {
+				resp.Schema.Properties = &swaggerSchemaObjectProperties{}
+				p := keyVal{Key: "code", Value: &schemaCore{Type: "integer"}}
+				*resp.Schema.Properties = append(*resp.Schema.Properties, p)
+				p = keyVal{Key: "message", Value: &schemaCore{Type: "string"}}
+				*resp.Schema.Properties = append(*resp.Schema.Properties, p)
+				p = keyVal{Key: "data", Value: schemaCore{Ref: "#/definitions/" + meth.GetOutputType()}}
+				*resp.Schema.Properties = append(*resp.Schema.Properties, p)
+			}
+
 			op.Responses = swaggerResponsesObject{"200": resp}
 		}
 	}
