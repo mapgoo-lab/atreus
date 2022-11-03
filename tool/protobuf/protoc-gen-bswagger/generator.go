@@ -72,10 +72,11 @@ func (t *swaggerGen) generateSwagger(file *descriptor.FileDescriptorProto) *plug
 	strs := r.FindStringSubmatch(pkg)
 	var vStr string
 	if len(strs) >= 2 {
-		vStr = strs[1]
+		vStr = "version: " + strs[1]
 	} else {
 		vStr = ""
 	}
+
 	var swaggerObj = &swaggerObject{
 		Paths:   swaggerPathsObject{},
 		Swagger: "2.0",
@@ -87,6 +88,17 @@ func (t *swaggerGen) generateSwagger(file *descriptor.FileDescriptorProto) *plug
 		Consumes: []string{"application/json", "multipart/form-data"},
 		Produces: []string{"application/json"},
 	}
+	fileComment, _ := t.Reg.FileComments(file)
+	if len(fileComment.Leading) > 0 {
+		split := strings.Split(fileComment.Leading, "\n")
+		if len(split) > 0 {
+			swaggerObj.Info.Title = split[0]
+
+			descLines := split[1:]
+			swaggerObj.Info.Description = strings.Trim(strings.Join(descLines, "\n"), "\r\n ")
+		}
+	}
+
 	t.defsMap = map[string]*typemap.MessageDefinition{}
 
 	out := &plugin.CodeGeneratorResponse_File{}
