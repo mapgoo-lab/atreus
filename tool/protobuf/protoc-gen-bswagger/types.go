@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"sort"
+	"strings"
+	"strconv"
 )
 
 // http://swagger.io/specification/#infoObject
@@ -75,6 +78,100 @@ type swaggerSecurityRequirementObject map[string][]string
 
 // http://swagger.io/specification/#pathsObject
 type swaggerPathsObject map[string]swaggerPathItemObject
+
+type swaggerPathSummary struct {
+	Path    string
+	Summary string
+}
+
+func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
+	psv := []swaggerPathSummary{}
+
+	for k, v := range po {
+		if len(k) == 0 {
+			continue
+		}
+		summary := k
+		if v.Get != nil && len(v.Get.Summary) > 0 {
+			summary = v.Get.Summary
+		} else if v.Post != nil && len(v.Post.Summary) > 0 {
+			summary = v.Post.Summary
+		} else if v.Delete != nil && len(v.Delete.Summary) > 0 {
+			summary = v.Delete.Summary
+		} else if v.Put != nil && len(v.Put.Summary) > 0 {
+			summary = v.Put.Summary
+		} else if v.Patch != nil && len(v.Patch.Summary) > 0 {
+			summary = v.Patch.Summary
+		} else {
+			summary = k
+		}
+
+		psv = append(psv, swaggerPathSummary{
+			Path:    k,
+			Summary: summary,
+		})
+	}
+
+	sort.Slice(psv, func(i, j int) bool {
+		rsi := strings.FieldsFunc(psv[i].Summary, func(r rune) bool {
+			return strings.ContainsRune(".,。:", r)
+		})
+
+		if len(rsi) == 0 {
+			return false
+		}
+
+		rsj := strings.FieldsFunc(psv[j].Summary, func(r rune) bool {
+			return strings.ContainsRune(".,。:", r)
+		})
+
+		if len(rsj) == 0 {
+			return true
+		}
+
+		indexi, erri := strconv.Atoi(rsi[0])
+		indexj, errj := strconv.Atoi(rsj[0])
+
+		if erri == nil && errj == nil {
+			return indexi < indexj
+		} else if erri != nil {
+			return false
+		} else if errj != nil {
+			return true
+		} else {
+			return psv[i].Summary < psv[j].Summary
+		}
+	})
+
+	var buf bytes.Buffer
+	buf.WriteString("{")
+	for i, ps := range psv {
+		if len(ps.Path) == 0 {
+			continue
+		}
+
+		if i != 0 {
+			buf.WriteString(",")
+		}
+
+		path, err := json.Marshal(ps.Path)
+		if err != nil {
+			return nil, err
+		}
+
+		buf.Write(path)
+		buf.WriteString(":")
+		po, _ := po[ps.Path]
+		val, err := json.Marshal(po)
+		if err != nil {
+			return nil, err
+		}
+		buf.Write(val)
+	}
+	buf.WriteString("}")
+
+	return buf.Bytes(), nil
+}
 
 // http://swagger.io/specification/#pathItemObject
 type swaggerPathItemObject struct {
