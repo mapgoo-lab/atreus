@@ -105,7 +105,12 @@ func (t *swaggerGen) generateSwagger(file *descriptor.FileDescriptorProto) *plug
 			op.Summary = apiInfo.Title
 			op.Description = apiInfo.Description
 			swaggerObj.Paths[apiInfo.Path] = pathItem
-			op.Tags = []string{pkg + "." + svc.GetName()}
+			svcComment, _ := t.Reg.ServiceComments(file, svc)
+			tag := *svc.Name
+			if len(svcComment.Leading) > 0 {
+				tag = svcComment.Leading
+			}
+			op.Tags = []string{tag}
 
 			// request
 			request := t.Reg.MessageDefinition(meth.GetInputType())
