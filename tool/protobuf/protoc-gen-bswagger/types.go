@@ -82,6 +82,7 @@ type swaggerPathsObject map[string]swaggerPathItemObject
 type swaggerPathSummary struct {
 	Path    string
 	Summary string
+	Tags 	string
 }
 
 func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
@@ -92,23 +93,58 @@ func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
 			continue
 		}
 		summary := k
-		if v.Get != nil && len(v.Get.Summary) > 0 {
-			summary = v.Get.Summary
-		} else if v.Post != nil && len(v.Post.Summary) > 0 {
-			summary = v.Post.Summary
-		} else if v.Delete != nil && len(v.Delete.Summary) > 0 {
-			summary = v.Delete.Summary
-		} else if v.Put != nil && len(v.Put.Summary) > 0 {
-			summary = v.Put.Summary
-		} else if v.Patch != nil && len(v.Patch.Summary) > 0 {
-			summary = v.Patch.Summary
+		tags := k
+		if v.Get != nil  {
+			if len(v.Get.Summary) > 0 {
+				summary = v.Get.Summary
+			}
+
+			if len(v.Get.Tags) > 0 && len(v.Get.Tags[0]) > 0 {
+				tags = v.Get.Tags[0]
+			}
+
+		} else if v.Post != nil {
+			if len(v.Post.Summary) > 0 {
+				summary = v.Post.Summary
+			}
+
+			if len(v.Post.Tags) > 0 && len(v.Post.Tags[0]) > 0 {
+				tags = v.Post.Tags[0]
+			}
+		} else if v.Delete != nil {
+			if len(v.Delete.Summary) > 0 {
+				summary = v.Delete.Summary
+			}
+
+			if len(v.Delete.Tags) > 0 && len(v.Delete.Tags[0]) > 0 {
+				tags = v.Delete.Tags[0]
+			}
+
+		} else if v.Put != nil {
+			if len(v.Put.Summary) > 0 {
+				summary = v.Put.Summary
+			}
+
+			if len(v.Put.Tags) > 0 && len(v.Put.Tags[0]) > 0 {
+				tags = v.Put.Tags[0]
+			}
+		} else if v.Patch != nil {
+			if len(v.Patch.Summary) > 0 {
+				summary = v.Patch.Summary
+			}
+
+			if len(v.Patch.Tags) > 0 && len(v.Patch.Tags[0]) > 0 {
+				tags = v.Patch.Tags[0]
+			}
 		} else {
 			summary = k
+			tags = k
 		}
 
 		psv = append(psv, swaggerPathSummary{
 			Path:    k,
 			Summary: summary,
+			Tags: tags,
 		})
 	}
 
@@ -129,17 +165,49 @@ func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
 			return true
 		}
 
-		indexi, erri := strconv.Atoi(rsi[0])
-		indexj, errj := strconv.Atoi(rsj[0])
+		rti := strings.FieldsFunc(psv[i].Tags, func(r rune) bool {
+			return strings.ContainsRune(".,。:", r)
+		})
 
-		if erri == nil && errj == nil {
-			return indexi < indexj
-		} else if erri != nil {
+		if len(rti) == 0 {
 			return false
-		} else if errj != nil {
+		}
+
+		rtj := strings.FieldsFunc(psv[j].Tags, func(r rune) bool {
+			return strings.ContainsRune(".,。:", r)
+		})
+
+		if len(rtj) == 0 {
+			return  true
+		}
+
+		indexsi, errsi := strconv.Atoi(rsi[0])
+		indexsj, errsj := strconv.Atoi(rsj[0])
+
+		indexti, errti := strconv.Atoi(rti[0])
+		indextj, errtj := strconv.Atoi(rtj[0])
+
+		if errti == nil && errtj == nil {
+			if indexti == indextj {
+				if errsi == nil && errsj == nil {
+					return indexsi < indexsj
+				} else if errsi != nil {
+					return false
+				} else if errsj != nil {
+					return true
+				} else {
+					return psv[i].Summary < psv[j].Summary
+				}
+			} else {
+				return indexti < indextj
+			}
+
+		} else if errti != nil {
+			return  false
+		} else if errtj != nil {
 			return true
 		} else {
-			return psv[i].Summary < psv[j].Summary
+			return psv[i].Tags < psv[j].Tags
 		}
 	})
 
