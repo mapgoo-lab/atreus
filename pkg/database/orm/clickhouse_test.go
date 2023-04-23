@@ -34,7 +34,14 @@ func (a *Test1) TableName() string {
 
 func TestClickHouse(t *testing.T) {
 	var dsn = "clickhouse://root:123456@127.0.0.1:19000/test?dial_timeout=10s&read_timeout=10s"
-	db := NewClickhouse(dsn, &gorm.Config{})
+	config := Config{
+		DSN:         dsn,
+		Active:      0,
+		Idle:        0,
+		IdleTimeout: 0,
+		GormConfig:  &gorm.Config{},
+	}
+	db := NewClickhouse(config)
 
 	zConfig := &zipkin.Config{
 		Endpoint:      "http://127.0.0.1:9411/api/v2/spans",
