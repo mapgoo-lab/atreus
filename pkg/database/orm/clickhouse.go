@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewClickhouse(config Config) *gorm.DB {
+func NewClickhouse(config *Config) *gorm.DB {
 	if config.GormConfig.Logger == nil {
 		config.GormConfig.Logger = NewLogger()
 	}
