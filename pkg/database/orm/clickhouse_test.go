@@ -34,7 +34,7 @@ func (a *Test1) TableName() string {
 
 func TestClickHouse(t *testing.T) {
 	var dsn = "clickhouse://root:123456@127.0.0.1:19000/test?dial_timeout=10s&read_timeout=10s"
-	config := Config{
+	config := &Config{
 		DSN:         dsn,
 		Active:      0,
 		Idle:        0,

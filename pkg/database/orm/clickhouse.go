@@ -7,6 +7,9 @@ import (
 )
 
 func NewClickhouse(config *Config) *gorm.DB {
+	if config.GormConfig == nil {
+		config.GormConfig = &gorm.Config{}
+	}
 	if config.GormConfig.Logger == nil {
 		config.GormConfig.Logger = NewLogger()
 	}
