@@ -5,7 +5,6 @@ go 1.18
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Shopify/sarama v1.26.4
-	github.com/denisenkom/go-mssqldb v0.0.0-20200428022330-06a60b6afbbc
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13
 	github.com/eclipse/paho.mqtt.golang v1.4.1
 	github.com/fatih/color v1.9.0
