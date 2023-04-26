@@ -4,7 +4,7 @@ import (
 	"github.com/mapgoo-lab/atreus/pkg/log"
 
 	// database driver
-	_ "github.com/microsoft/go-mssqldb"
+	_ "github.com/denisenkom/go-mssqldb"
 )
 
 // NewMSSQL new db and retry connection when has error.

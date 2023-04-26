@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Shopify/sarama v1.26.4
+	github.com/denisenkom/go-mssqldb v0.12.3
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13
 	github.com/eclipse/paho.mqtt.golang v1.4.1
 	github.com/fatih/color v1.9.0
@@ -65,7 +66,6 @@ require (
 	github.com/gobuffalo/logger v1.0.3 // indirect
 	github.com/gobuffalo/packd v1.0.0 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
-	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -85,7 +85,6 @@ require (
 	github.com/mattn/go-isatty v0.0.11 // indirect
 	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/microsoft/go-mssqldb v0.17.0 // indirect
 	github.com/paulmach/orb v0.7.1 // indirect
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
@@ -123,4 +122,9 @@ require (
 	modernc.org/b v1.0.0 // indirect
 	modernc.org/mathutil v1.1.1 // indirect
 	modernc.org/strutil v1.1.0 // indirect
+)
+
+replace (
+	github.com/denisenkom/go-mssqldb v0.12.3 => github.com/denisenkom/go-mssqldb v0.0.0-20200428022330-06a60b6afbbc
+	gorm.io/driver/sqlserver v1.4.1 => gorm.io/driver/sqlserver v1.4.0
 )
