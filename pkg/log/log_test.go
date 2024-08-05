@@ -12,7 +12,7 @@ import (
 func initStdout() {
 	conf := &Config{
 		Stdout: true,
-		V: int32(_debugLevel),
+		V:      int32(_debugLevel),
 	}
 	Init(conf)
 }
@@ -22,7 +22,16 @@ func initFile() {
 		Dir: "/tmp",
 		// VLevel:  2,
 		Module: map[string]int32{"log_test": 1},
-		V: int32(_debugLevel),
+		V:      int32(_debugLevel),
+	}
+	Init(conf)
+}
+
+func initKafka() {
+	conf := &Config{
+		KafkaBrokers: "localhost:9092",
+		KafkaTopic:   "test",
+		V:            int32(_debugLevel),
 	}
 	Init(conf)
 }
@@ -33,7 +42,6 @@ type TestLog struct {
 	C string
 	D string
 }
-
 
 func testLog(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
@@ -67,6 +75,12 @@ func TestFile(t *testing.T) {
 
 func TestStdout(t *testing.T) {
 	initStdout()
+	testLog(t)
+	assert.Equal(t, nil, Close())
+}
+
+func TestKafka(t *testing.T) {
+	initKafka()
 	testLog(t)
 	assert.Equal(t, nil, Close())
 }

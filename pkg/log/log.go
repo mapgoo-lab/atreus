@@ -43,6 +43,10 @@ type Config struct {
 	// RotateSize
 	RotateSize int64
 
+	//kafka
+	KafkaBrokers string
+	KafkaTopic   string
+
 	// V Enable V-leveled logging at the specified level.
 	V int32
 	// Module=""
@@ -86,13 +90,15 @@ func init() {
 }
 
 var (
-	_v        int
-	_stdout   bool
-	_dir      string
-	_agentDSN string
-	_filter   logFilter
-	_module   = verboseModule{}
-	_noagent  bool
+	_v            int
+	_stdout       bool
+	_dir          string
+	_agentDSN     string
+	_filter       logFilter
+	_module       = verboseModule{}
+	_noagent      bool
+	_kafkaBrokers string
+	_kafkaTopic   string
 )
 
 // addFlag init log from dsn.
@@ -109,6 +115,13 @@ func addFlag(fs *flag.FlagSet) {
 		_filter.Set(tf)
 	}
 	_noagent, _ = strconv.ParseBool(os.Getenv("LOG_NO_AGENT"))
+	if kb := os.Getenv("LOG_KAFKA_BROKERS"); len(kb) > 0 {
+		_kafkaBrokers = kb
+	}
+
+	if kt := os.Getenv("LOG_KAFKA_TOPIC"); len(kt) > 0 {
+		_kafkaTopic = kt
+	}
 	// get val from flag
 	fs.IntVar(&_v, "log.v", _v, "log verbose level, or use LOG_V env variable.")
 	fs.BoolVar(&_stdout, "log.stdout", _stdout, "log enable stdout or not, or use LOG_STDOUT env variable.")
@@ -117,6 +130,8 @@ func addFlag(fs *flag.FlagSet) {
 	fs.Var(&_module, "log.module", "log verbose for specified module, or use LOG_MODULE env variable, format: file=1,file2=2.")
 	fs.Var(&_filter, "log.filter", "log field for sensitive message, or use LOG_FILTER env variable, format: field1,field2.")
 	fs.BoolVar(&_noagent, "log.noagent", _noagent, "force disable log agent print log to stderr,  or use LOG_NO_AGENT")
+	fs.StringVar(&_kafkaBrokers, "log.kafka.brokers", _kafkaBrokers, "log kafka brokers, or use LOG_KAFKA_BROKERS env variable.")
+	fs.StringVar(&_kafkaTopic, "log.kafka.topic", _kafkaTopic, "log kafka topic, or use LOG_KAFKA_TOPIC env variable.")
 }
 
 // Init create logger with context.
@@ -125,11 +140,13 @@ func Init(conf *Config) {
 	if conf == nil {
 		isNil = true
 		conf = &Config{
-			Stdout: _stdout,
-			Dir:    _dir,
-			V:      int32(_v),
-			Module: _module,
-			Filter: _filter,
+			Stdout:       _stdout,
+			Dir:          _dir,
+			KafkaBrokers: _kafkaBrokers,
+			KafkaTopic:   _kafkaTopic,
+			V:            int32(_v),
+			Module:       _module,
+			Filter:       _filter,
 		}
 	}
 	if len(env.AppID) != 0 {
@@ -147,6 +164,9 @@ func Init(conf *Config) {
 	}
 	if conf.Dir != "" {
 		hs = append(hs, NewFile(conf.Dir, conf.FileBufferSize, conf.RotateSize, conf.MaxLogFile))
+	}
+	if conf.KafkaBrokers != "" && conf.KafkaTopic != "" {
+		hs = append(hs, NewKafka(conf.KafkaBrokers, conf.KafkaTopic))
 	}
 	h = newHandlers(conf.Filter, hs...)
 	c = conf
