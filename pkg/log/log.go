@@ -122,7 +122,8 @@ func addFlag(fs *flag.FlagSet) {
 	if kt := os.Getenv("LOG_KAFKA_TOPIC"); len(kt) > 0 {
 		_kafkaTopic = kt
 	}
-	// get val from flag
+
+	// get var from flag
 	fs.IntVar(&_v, "log.v", _v, "log verbose level, or use LOG_V env variable.")
 	fs.BoolVar(&_stdout, "log.stdout", _stdout, "log enable stdout or not, or use LOG_STDOUT env variable.")
 	fs.StringVar(&_dir, "log.dir", _dir, "log file `path, or use LOG_DIR env variable.")

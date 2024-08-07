@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/mapgoo-lab/atreus/pkg/conf/env"
 	kafka "github.com/segmentio/kafka-go"
 	"os"
 	"strings"
@@ -16,6 +17,7 @@ type K8SMetadata struct {
 	PodName       string `json:"pod"`
 	Namespace     string `json:"namespace"`
 	AppName       string `json:"app"`
+	AppID         string `json:"appid"`
 }
 
 type KafkaLog struct {
@@ -29,6 +31,7 @@ type KafkaHandler struct {
 	render      Render
 	writer      *kafka.Writer
 	k8SMetadata *K8SMetadata
+	key         string
 }
 
 // 如果在K8S中运行，需要附加K8S元数据，以方便在日志中根据label查找
@@ -44,6 +47,7 @@ func getK8sMetadata() *K8SMetadata {
 			PodName:       podName,
 			Namespace:     namespace,
 			AppName:       appName,
+			AppID:         env.AppID,
 		}
 	} else {
 		return nil
@@ -61,14 +65,29 @@ func NewKafka(brokers string, topic string) *KafkaHandler {
 	writer := &kafka.Writer{
 		Addr:     kafka.TCP(brokersList...),
 		Topic:    topic,
-		Balancer: kafka.CRC32Balancer{},
+		Balancer: kafka.Murmur2Balancer{},
 		Async:    true,
+	}
+
+	k8sMetadata := getK8sMetadata()
+	//因为同一个服务实例产生的日志，必须保证时序，所以key必须是固定的，以保证同一个服务实例的日志写到固定分区
+	key := ""
+	if k8sMetadata != nil {
+		//运行在K8S中，则使用PodName作为key
+		key = k8sMetadata.PodName
+	} else if env.RunContainer == "true" || env.RunContainer == "1" || env.RunContainer == "True" {
+		//运行在容器中，但是没有运行在K8S中，则使用HOSTNAME环境变量作为key
+		key = env.Hostname
+	} else {
+		//运行在物理机或者虚拟机中，则使用Hostname-APPID-timestamp作为key
+		key = fmt.Sprintf("%s-%s-%d", env.Hostname, env.AppID, time.Now().UnixMilli())
 	}
 
 	return &KafkaHandler{
 		render:      newPatternRender("%L %d-%T %f %M"),
 		writer:      writer,
-		k8SMetadata: getK8sMetadata(),
+		k8SMetadata: k8sMetadata,
+		key:         key,
 	}
 }
 
@@ -90,7 +109,7 @@ func (h *KafkaHandler) Log(ctx context.Context, lv Level, args ...D) {
 
 	if logData, err := json.Marshal(log); err == nil {
 		if err := h.writer.WriteMessages(ctx, kafka.Message{
-			Key:   []byte(fmt.Sprintf("%d", now.UnixMilli())),
+			Key:   []byte(h.key),
 			Value: logData,
 		}); err != nil {
 			fmt.Println(err)
