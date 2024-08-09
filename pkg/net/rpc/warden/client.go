@@ -72,6 +72,7 @@ type ClientConfig struct {
 	KeepAliveInterval      xtime.Duration
 	KeepAliveTimeout       xtime.Duration
 	KeepAliveWithoutStream bool
+	LogFlag                int8
 }
 
 // Client is the framework's client side instance, it contains the ctx, opt and interceptors.
@@ -198,6 +199,7 @@ func NewClient(conf *ClientConfig, opt ...grpc.DialOption) *Client {
 	}
 	//c.UseOpt(grpc.WithBalancerName(p2c.Name))
 	grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, p2c.Name))
+	opt = append(opt, WithDialLogFlag(conf.LogFlag))
 	c.UseOpt(opt...)
 	return c
 }
@@ -230,6 +232,9 @@ func (c *Client) SetConfig(conf *ClientConfig) (err error) {
 	}
 	if conf.KeepAliveTimeout <= 0 {
 		conf.KeepAliveTimeout = xtime.Duration(time.Second * 20)
+	}
+	if conf.LogFlag < 0 {
+		conf.LogFlag = 0
 	}
 
 	// FIXME(maojian) check Method dial/timeout
