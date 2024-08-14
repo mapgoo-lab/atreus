@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"sort"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 // http://swagger.io/specification/#infoObject
@@ -82,7 +82,7 @@ type swaggerPathsObject map[string]swaggerPathItemObject
 type swaggerPathSummary struct {
 	Path    string
 	Summary string
-	Tags 	string
+	Tags    string
 }
 
 func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
@@ -94,7 +94,7 @@ func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
 		}
 		summary := k
 		tags := k
-		if v.Get != nil  {
+		if v.Get != nil {
 			if len(v.Get.Summary) > 0 {
 				summary = v.Get.Summary
 			}
@@ -144,7 +144,7 @@ func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
 		psv = append(psv, swaggerPathSummary{
 			Path:    k,
 			Summary: summary,
-			Tags: tags,
+			Tags:    tags,
 		})
 	}
 
@@ -178,14 +178,14 @@ func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
 		})
 
 		if len(rtj) == 0 {
-			return  true
+			return true
 		}
 
-		indexsi, errsi := strconv.Atoi(rsi[0])
-		indexsj, errsj := strconv.Atoi(rsj[0])
+		indexsi, errsi := strconv.Atoi(strings.TrimSpace(rsi[0]))
+		indexsj, errsj := strconv.Atoi(strings.TrimSpace(rsj[0]))
 
-		indexti, errti := strconv.Atoi(rti[0])
-		indextj, errtj := strconv.Atoi(rtj[0])
+		indexti, errti := strconv.Atoi(strings.TrimSpace(rti[0]))
+		indextj, errtj := strconv.Atoi(strings.TrimSpace(rtj[0]))
 
 		if errti == nil && errtj == nil {
 			if indexti == indextj {
@@ -203,7 +203,7 @@ func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
 			}
 
 		} else if errti != nil {
-			return  false
+			return false
 		} else if errtj != nil {
 			return true
 		} else {
