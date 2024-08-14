@@ -181,33 +181,32 @@ func (po swaggerPathsObject) MarshalJSON() ([]byte, error) {
 			return true
 		}
 
-		indexsi, errsi := strconv.Atoi(strings.TrimSpace(rsi[0]))
-		indexsj, errsj := strconv.Atoi(strings.TrimSpace(rsj[0]))
+		indexsi, _ := strconv.Atoi(strings.TrimSpace(rsi[0]))
+		indexsj, _ := strconv.Atoi(strings.TrimSpace(rsj[0]))
 
-		indexti, errti := strconv.Atoi(strings.TrimSpace(rti[0]))
-		indextj, errtj := strconv.Atoi(strings.TrimSpace(rtj[0]))
+		indexti, _ := strconv.Atoi(strings.TrimSpace(rti[0]))
+		indextj, _ := strconv.Atoi(strings.TrimSpace(rtj[0]))
 
-		if errti == nil && errtj == nil {
-			if indexti == indextj {
-				if errsi == nil && errsj == nil {
-					return indexsi < indexsj
-				} else if errsi != nil {
-					return false
-				} else if errsj != nil {
-					return true
-				} else {
+		if indexti == indextj {
+			if psv[i].Tags == psv[j].Tags {
+				if indexsi == indexsj {
+					//编号相同的用字母排序
 					return psv[i].Summary < psv[j].Summary
+				} else if indexsi == 0 || indexsj == 0 {
+					//没写编号的排后面
+					return indexsi > indexsj
+				} else {
+					//有编号的按编号排序
+					return indexsi < indexsj
 				}
 			} else {
-				return indexti < indextj
+				return psv[i].Tags < psv[j].Tags
 			}
-
-		} else if errti != nil {
-			return false
-		} else if errtj != nil {
-			return true
+		} else if indexti == 0 || indextj == 0 {
+			//没写编号的排后面
+			return indexti > indextj
 		} else {
-			return psv[i].Tags < psv[j].Tags
+			return indexti < indextj
 		}
 	})
 
