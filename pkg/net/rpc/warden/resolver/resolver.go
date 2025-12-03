@@ -59,9 +59,9 @@ func (b *Builder) Build(target resolver.Target, cc resolver.ClientConn, opts res
 	var zone = env.Zone
 	ss := int64(50)
 	clusters := map[string]struct{}{}
-	str := strings.SplitN(target.Endpoint, "?", 2)
+	str := strings.SplitN(target.Endpoint(), "?", 2)
 	if len(str) == 0 {
-		return nil, errors.Errorf("warden resolver: parse target.Endpoint(%s) failed!err:=endpoint is empty", target.Endpoint)
+		return nil, errors.Errorf("warden resolver: parse target.Endpoint(%s) failed!err:=endpoint is empty", target.Endpoint())
 	} else if len(str) == 2 {
 		m, err := url.ParseQuery(str[1])
 		if err == nil {
@@ -216,8 +216,8 @@ func (r *Resolver) newAddress(instances []*naming.Instance) {
 			}
 		}
 		addr := resolver.Address{
-			Addr:       rpc,
-			Type:       resolver.Backend,
+			Addr: rpc,
+			// Type:       resolver.Backend,
 			ServerName: ins.AppID,
 			Metadata:   wmeta.MD{Weight: uint64(weight), Color: ins.Metadata[naming.MetaColor]},
 		}
