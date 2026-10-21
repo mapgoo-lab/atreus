@@ -40,6 +40,9 @@ type ConsumerParam struct {
 	QueueLen   int
 	SessionMs  int
 	PollMs     int
+	// DisablePartitionEOF prevents Kafka from emitting PartitionEOF events.
+	// It is false by default to preserve the historical behavior.
+	DisablePartitionEOF bool
 }
 
 type consumerEvent struct {
@@ -91,7 +94,9 @@ func NewConsumerHandle(param *ConsumerParam, appname string, Id int) (*consumerE
 	if handle.param.PollMs > 0 {
 		handle.config["max.poll.interval.ms"] = handle.param.PollMs
 	}
-	handle.config["enable.partition.eof"] = true
+	if !handle.param.DisablePartitionEOF {
+		handle.config["enable.partition.eof"] = true
+	}
 
 	consumer, err := kafka.NewConsumer(&handle.config)
 	if err != nil {
